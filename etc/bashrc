@@ -1,0 +1,44 @@
+# /* vim: set filetype=sh : */
+
+Here=$(PWD)
+
+if [ -z "$me" ]; then
+  PS1=":$PS1"
+  PROMPT=":$PROMPT"
+  me=`basename $PWD`
+fi
+
+install() { 
+  ## install       : install everything in rewquirements.txt
+  if [ -f $Here/requirements.txt ]; then
+    for r in `cat $Here/requirements.txt`; do
+      echo; echo; echo "Installing $r"; sudo pip3 install $r
+    done
+  fi
+}
+pep8() { 
+  ## pep8 FILE.py  : reformat FILE.py to PEP8 standards
+  autopep8 --global-config .pep8   --in-place --aggressive --aggressive $1
+}
+
+ed() { 
+  ## ed FILE       : Edit a file with my vim bindings.
+  vim -u $Here/etc/vimrc $1
+}
+
+hi() { 
+  ## hi            : Update files from git.
+  git pull
+}
+
+bye() { 
+  ## bye           : Push files back to git.
+  git status
+  git commit -am "update" 
+  git push
+}
+
+help() {  
+  echo $me; echo; echo 'OPTIONS:'; echo;
+  grep '##' $Here/etc/bashrc | sed 's/^.*# //' | grep -v grep 
+}
