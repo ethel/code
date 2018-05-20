@@ -2,23 +2,35 @@
 
 Here=$(PWD)
 
+
 if [ -z "$me" ]; then
   PS1=":$PS1"
   PROMPT=":$PROMPT"
   me=`basename $PWD`
+  PATH="$Here:$PATH"
 fi
 
 install() { 
-  ## install       : install everything in rewquirements.txt
+  ## install       : install everything in requirements.txt
   if [ -f $Here/requirements.txt ]; then
     for r in `cat $Here/requirements.txt`; do
-      echo; echo; echo "Installing $r"; sudo pip3 install $r
+      echo; echo; 
+      echo sudo pip3 install $r
+      sudo pip3 install $r
     done
   fi
+  for f in *; do
+    if [ -f "$f" ]; then
+      if head -1 $f | egrep '^...usr.bin.env ' > /dev/null ; then
+        echo chmod +x $f
+        chmod +x $f
+      fi
+    fi
+  done
 }
 pep8() { 
   ## pep8 FILE.py  : reformat FILE.py to PEP8 standards
-  autopep8 --global-config .pep8   --in-place --aggressive --aggressive $1
+  autopep8 --global-config $Here/etc/pep8 --in-place --aggressive --aggressive $1
 }
 
 ed() { 
