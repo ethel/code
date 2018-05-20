@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# ETHEL: a mulit-objective rule generator"
+# ETHEL: a mulit-objective rule generator
 
 ## Imports
 
@@ -93,9 +93,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ## Standard Library Functions
 
-### Define functions we can call from command-line
 
 def demo(f=None, act=None, all=[]):
+  # Define functions we can call from command-line
   if f:
     all += [f]
   elif act:
@@ -142,7 +142,7 @@ def timeit(f):
 ### JavaScript Envy
 
 class o(object):
-  "Javascript envy. Now 'o' is like a JS object."
+  # Javascript envy. Now 'o' is like a JS object.
   def __init__(i, **kv): i.__dict__.update(kv)
 
   def __setitem__(i, k, v): i.__dict__[k] = v
@@ -186,9 +186,9 @@ def red(s):
     print(s, end="")
 
 
-### Tool for creating our global 'THE'
 
 def the(b4):
+  # Tool for creating our global 'THE'
   now = o()
   def options(x): return x if isinstance(x, list) else [x]
   for k in b4["what"].keys():
@@ -201,7 +201,7 @@ def the(b4):
 
 
 def kv(d, keys=None):
-  # print dictionary, in key sort order"
+  # print dictionary, in key sort order
   keys = keys or sorted(list(d.keys()))
 
   def pretty(x): return round(x, DECIMALS) if isinstance(x, float) else x
@@ -214,15 +214,13 @@ def kv(d, keys=None):
 
 
 def main(about, argv=None):
-  "Configure command line parser from keys of dictonary 'd'"
+  #Configure command line parser from keys of dictonary 'd'
   d = the(about)
   argv = argv or sys.argv[1:]
   keys = sorted([k for k in about["what"].keys()])
-
-  def mark(k): return "" if isinstance(d[k], bool) else ":"
   opts = 'hC%s' % ''.join(['%s%s' % (k[0], mark(k)) for k in keys])
   oops = lambda x, y=2: print(x) or sys.exit(y)
-  # -------------------------------------------------------
+  mark = lambda k: "" if isinstance(d[k], bool) else ":"
 
   def one(d, slot, opt, arg):
     what = slot["what"]
@@ -278,7 +276,7 @@ THE = main(ABOUT)
 ### Data Management
 
 def rows(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
-  "World's smallest csv reader?"
+  #World's smallest csv reader?
   use = None
   with open(file) as fs:
     for n, line in enumerate(fs):
@@ -292,7 +290,7 @@ def rows(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
 
 
 def data(src, rules={"$": float, "<": float, ">": float}):
-  "Coerce strings to things using rules seen on line 1"
+  #Coerce strings to things using rules seen on line 1
   changes = None
 
   def change1(x, f): return x if x[0] == "?" else f(x)
@@ -305,7 +303,7 @@ def data(src, rules={"$": float, "<": float, ">": float}):
 
 
 def xy(src, rules=['<', '>']):
-  "Seperate rows into decision and objectives."
+  #Seperate rows into decision and objectives.
   decs, objs = None, None
   for row in src:
     decs = decs or [n for n, x in enumerate(row) if not x[0] in rules]
@@ -398,22 +396,6 @@ class Table:
         tmp + row.dom
         val[key] = tmp
     return val
-
-
-class Range:
-  def __init__(i, lo=None, hi=None):
-    if hi is None:
-      hi = lo
-    i.lo, i.hi = lo, hi
-
-# class Range:
-#    def __init__(i,t,n): i.n, i.t, i.act = n, t, None
-#    def __eq__(i, z): lambda row: t.rows.x[i.n] == z
-#    def __ne__(i, z): lambda row: t.rows.x[i.n] != z
-#    def __lt__(i, z): lambda row: t.rows.x[i.n] <  z
-#    def __gt__(i, z): lambda row: t.rows.x[i.n] >  z
-#    def __le__(i, z): lambda row: t.rows.x[i.n] <= z
-#    def __ge__(i, z): lambda row: t.rows.x[i.n] >= z
 
 
 def tree(t):
@@ -597,9 +579,6 @@ def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
   def recurse(lo=0, hi=len(lst), up=None, lvl=0):
     node = makeNode(lst[lo:hi], lvl=lvl, up=up) if lvl else up
     m = mid(lo, hi)
-    # print("lo",X(lo),dict(lo=lo,m=m,hi=hi,few=few,left=hi-m,
-    # right=m-lo,epsilon=epsilon,xM=X(m),xh=X(hi
-    # -1),xRight=X(m)-X(lo),yLeft=X(hi-1)-X(m)))
     if hi - m > few:
       if m - lo > few:
         if X(m) - X(lo) > epsilon:
@@ -642,7 +621,6 @@ def _grow(X=same, Y=same, N=10000):
     return 0
 
   def show(z): return [X(z), flats(z)]
-  # (z)]
   seed(1)
   print("\n--------------------------")
   tree = grow([show(int(100 * r())) for _ in range(N)],
