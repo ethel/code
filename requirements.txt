@@ -1,2 +1,3 @@
+pycco
 colorama
 autopep8
