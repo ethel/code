@@ -3,11 +3,12 @@
 # Imports
 
 import getopt
-import sys
-import re
 import math
-import time
 import os
+import re
+import sys
+import time
+import traceback
 from random import random as r, choice as any, seed as seed
 from colorama import Fore, Style
 from contextlib import contextmanager
@@ -72,10 +73,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             why="decimals to display for floats",
             what=3,
             want=int),
+        elite=dict(
+            why="build rules from the top 'elite' number of ranges",
+            what=10,
+            want=int),
         few=dict(
             why="min bin size = max(few, N ^ power)",
             what=10,
-            want=int),
+            want=int), 
+        least=dict(
+            why="min support for acceptable rules",
+            what=20,
+            want=int), 
         MAIN=dict(
             why="start up action",
             what="FORMO",
@@ -84,6 +93,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             why="min bin size = max(few, N ^ power)",
             what=0.5,
             want=float),
+        speed=dict(
+            why="enable heuristic domination (useful for large data sets)",
+            what=False,
+            want=bool),
+        tiny=dict(
+            why="for speed mode, min distance delta for retries",
+            what=0.05,
+            want=float),
         undoubt=dict(
             why="doubt reductions must be larger than x*undoubt",
             what=1.05,
@@ -91,7 +108,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         verbose=dict(
             why="trace all calls",
             what=False,
-            want=bool)))
+            want=bool),
+))
 
 # Standard Library Functions
 
@@ -255,7 +273,8 @@ def main(about, argv=None):
     for k in keys:
       print("  -%s\t%-10s\t%s    (default=%s)" % (
           k[0], k, about["what"][k]["why"], d[k]))
-    oops("  -hC\t%-10s\tshow help" % '', 0)
+    print("  -h\t%-10s\tshow help" % '')
+    oops("  -C\t%-10s\tshow copright" % '', 0)
 
   def copyrite():
     oneLine()
@@ -359,7 +378,6 @@ class Row(o):
       s2 -= e**(w * (b - a) / n)
     return s1 / n < s2 / n
 
-
 class Table:
   def __init__(i, decs, objs):
     i.rows = []
@@ -381,10 +399,7 @@ class Table:
   def doms(i):
     if not i._dom:
       i._dom = True
-      for row1 in i.rows:
-        for row2 in i.rows:
-          if row1.dominates(row2, i.y.weights, i.y.lo, i.y.hi):
-            row1.dom += 1
+      fastdom(i) if THE.speed else slowdom(i)
     return i
 
   def splits(i):
@@ -408,6 +423,61 @@ class Table:
         val[key] = tmp
     return val
 
+def slowdom(t):
+  for row1 in t.rows:
+    for row2 in t.rows:
+      if row1.dominates(row2, t.y.weights, t.y.lo, t.y.hi):
+        row1.dom += 1
+
+def fastdom(t):
+  z   = 10**-32
+  def dist(i, j):
+    d,n = 0,z
+    for a,b,lo,hi in zip(i.y, j.y, t.y.lo, t.y.hi):
+      a  = (a - lo) / (hi - lo + z)
+      b  = (b - lo) / (hi - lo + z)
+      d += (a-b)**2
+      n += 1
+    return d**0.5/n**0.5
+
+  def furthest(i, lst):
+    most,out = -1,i
+    for j in lst:
+      d = dist(i,j)
+      if d > most: most,out = d,j
+    return out
+
+  def recurse(lst, rank, west=None, east=None,c=None,lvl=1):
+    n   = len(lst)
+    mid = n // 2
+    print()
+    if n < few:
+      rank += 1
+      for one in lst: 
+        one.dom = rank  
+    else:
+      west = west or furthest(any(lst),  lst)
+      east = east or furthest(west, lst)
+      c    = c    or dist(west,east)
+      tmp = []
+      for row in lst:
+        a = dist(west, row)
+        if a > THE["tiny"]+c:
+          return recurse(lst, rank, west=row, east=west, c=a, lvl=lvl)
+        b = dist(east, row)
+        if b > THE["tiny"]+c:
+          return recurse(lst, rank, west=row, east=east, c=b, lvl=lvl)
+        x    = (a*a + c*c - b*b) / (2*c + z)
+        tmp += [(x,row)]
+      tmp = [pair[1] for pair in sorted(tmp)]
+      rest,best = tmp[0:mid], tmp[mid:]
+      flip = west.dominates(east, t.y.weights, t.y.lo, t.y.hi) 
+      rank = recurse(best if flip else rest, rank, lvl= lvl+1) 
+      rank = recurse(rest if flip else best, rank, lvl= lvl+1)
+    return rank
+ 
+  few = max(THE.few, len(t.rows)**THE.power)
+  return recurse(t.rows, 0)
 
 def tree(t):
   if t:
@@ -454,12 +524,22 @@ def table(file):
 @demo
 def DOM():
   t = table(THE["DATA"])
+  t.doms()
   t.rows = sorted(t.rows)
   for row in t.rows[:10]:
     print("<", row.y, row.dom)
   print()
   for row in t.rows[-10:]:
     print(">", row.y, row.dom)
+
+@demo
+def FASTDOM():
+  seed(1)
+  t = table(THE["DATA"])
+  t.doms()
+  fastdom(t)
+  t.rows = sorted(t.rows)
+  for row in t.rows: print("<", row.y, row.dom, row.dom1)
 
 @demo
 def SPLITS(file=THE["DATA"]):
@@ -469,21 +549,17 @@ def SPLITS(file=THE["DATA"]):
   for x in lst:
     print(x.key, x, len(x.rows))
   out = []
-  for sub in subsets(lst[:10]):
-    one = combine(sub, 20)
+  for sub in subsets(lst[:THE["elite"]]):
+    one = combine(sub, THE["least"])
     if one:
       out += [one]
   print()
-  sized = sorted(out, key=lambda z: (z[2], -z[1].mu))
-  seen = []
+  out = sorted(out, key=lambda z:len(z[0]))
   best = -1
-  for keys, summary, cardinality in sized:
-    if cardinality not in seen:
-      seen += [cardinality]
-      if summary.mu > best:
-        best = summary.mu
-        print(int(summary.mu), summary.n, cardinality, keys)
-
+  for a,b,c in out: 
+    if b.mu > best:
+      best = b.mu
+      print(int(b.mu), b.n, a)
 
 def combine(ranges, few):
   print(".", end="")
