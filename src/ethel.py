@@ -96,15 +96,29 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 def demo(f=None, act=None, all=[]):
     # Define functions we can call from command-line
+    def try1(f):
+      print("\n-----| %s |-----------------------" % f.__name__)
+      if f.__doc__:
+        print("# "+ re.sub(r'\n[ \t]*',"\n# ",f.__doc__))
+      try:  
+        TRIES += 1
+        f()
+      except Exception as e:
+        FAILS += 1
+        print(traceback.format_exc())
+
     if f:
-        all += [f]
+      all += [f]
     elif act:
-        for one in all:
-            if one.__name__ == act:
-                return one()
-        print("unknown %s" % act)
+      for one in all:
+        if one.__name__ == act:
+          return try1(f)
+      print("unknown %s" % act)
     else:
-        [f() for f in all]
+      [try1() for f in all]
+      passed = TRIES - FAIL
+      print("\n# PASS= %s FAIL= %s %%PASS = %s%%"  % (
+            passed, FAIL, int(round(passed*100/(PASS+FAIL+0.001)))))
     return f
 
 # Low-level utilities
