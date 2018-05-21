@@ -65,7 +65,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             want=float),
         DATA=dict(
             why="input data csv file",
-            what='data/auto.csv',
+            what='../data/auto.csv',
             make=str,
             want=filep),
         decimals=dict(
@@ -332,7 +332,7 @@ def FORMO():
 
 @demo
 def CSV():
-  for n, r in enumerate(data(rows("auto.csv"))):
+  for n, r in enumerate(data(rows(THE["DATA"]))):
     if n < 10:
       print(r)
 
@@ -453,7 +453,7 @@ def table(file):
 
 @demo
 def DOM():
-  t = table("auto.csv")
+  t = table(THE["DATA"])
   t.rows = sorted(t.rows)
   for row in t.rows[:10]:
     print("<", row.y, row.dom)
