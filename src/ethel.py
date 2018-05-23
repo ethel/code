@@ -1,359 +1,17 @@
 # ETHEL: a mulit-objective rule generator
 
-# Imports
-
-import getopt
-import math
-import os
-import re
-import sys
-import time
-import traceback
-from random import random as r, choice as any, seed as seed
-from colorama import Fore, Style
-from contextlib import contextmanager
-
-# Globals
-
-DECIMALS = 3
-PASS = FAIL = 0
-
-# Options
-
-
-def filep(x): return os.path.isfile(x)
-
-
-def same(x): return x
-
-
-ABOUT = dict(
-    why="ETHEL: multi-objective rule generator",
-    which="0.1.0",
-    who="Tim Menzies, MIT license (2 clause)",
-    when=2018,
-    how="python3 ethel.py",
-    copyright="""
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
-ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  """,
-    what=dict(
-        cohen=dict(
-            why="define small changes",
-            what=[
-                0.2,
-                0.1,
-                0.3,
-                0.5],
-            want=float),
-        DATA=dict(
-            why="input data csv file",
-            what='../data/auto.csv',
-            make=str,
-            want=filep),
-        decimals=dict(
-            why="decimals to display for floats",
-            what=3,
-            want=int),
-        elite=dict(
-            why="build rules from the top 'elite' number of ranges",
-            what=10,
-            want=int),
-        few=dict(
-            why="min bin size = max(few, N ^ power)",
-            what=10,
-            want=int), 
-        least=dict(
-            why="min support for acceptable rules",
-            what=20,
-            want=int), 
-        MAIN=dict(
-            why="start up action",
-            what="FORMO",
-            want=same),
-        power=dict(
-            why="min bin size = max(few, N ^ power)",
-            what=0.5,
-            want=float),
-        speed=dict(
-            why="enable heuristic domination (useful for large data sets)",
-            what=False,
-            want=bool),
-        tiny=dict(
-            why="for speed mode, min distance delta for retries",
-            what=0.05,
-            want=float),
-        undoubt=dict(
-            why="doubt reductions must be larger than x*undoubt",
-            what=1.05,
-            want=float),
-        verbose=dict(
-            why="trace all calls",
-            what=False,
-            want=bool),
-))
-
-# Standard Library Functions
-
-
-def demo(f=None, act=None, all=[]):
-  # Define functions we can call from command-line
-  def try1(fun):
-    global PASS
-    global FAIL
-    print("\n-----| %s |-----------------------" % fun.__name__)
-    if fun.__doc__:
-      print("# " + re.sub(r'\n[ \t]*', "\n# ", fun.__doc__))
-    try:
-      fun()
-      PASS = PASS+1
-    except Exception as e:
-      FAIL = FAIL+1
-      print(traceback.format_exc())
-
-  if f:
-    all += [f]
-  elif act:
-    for fun in all:
-      if fun.__name__ == act:
-        return try1(fun)
-    print("unknown %s" % act)
-  else:
-    print(all)
-    [try1(fun) for fun in all]
-    print("\n# PASS= %s FAIL= %s %%PASS = %s%%" % (
-          PASS, FAIL, int(round(PASS * 100 / (PASS + FAIL + 0.001)))))
-  return f
-
-# Low-level utilities
-
-
-def sym(x): return x
-
-
-def first(l): return l[0]
-
-
-def second(l): return l[1]
-
-
-def last(l): return l[-1]
-
-
-def subsets(lst):
-  if lst is None:
-    return None
-  subsets = [[]]
-  lst1 = []
-  for n in lst:
-    for s in subsets:
-      lst1.append(s + [n])
-    subsets += lst1
-    lst1 = []
-  return subsets
-
-def timeit(f):
-  t1 = time.perf_counter()
-  f()
-  return time.perf_counter() - t1
-
-# JavaScript Envy
-
-
-class o(object):
-  # Javascript envy. Now 'o' is like a JS object.
-  def __init__(i, **kv): i.__dict__.update(kv)
-  def __setitem__(i, k, v): i.__dict__[k] = v
-  def __getitem__(i, k): return i.__dict__[k]
-  def __repr__(i): return i.__class__.__name__ + kv(i.__dict__, i._has())
-  def __len__(i): return len(i.__dict__)
-  def _has(i): return [k for k in sorted(i.__dict__.keys()) if k[0] != "_"]
-  def keys(i): return i.__dict__.keys()
-
-
-# Coloring
-
-
-class Highlight:
-  def __init__(i, clazz, color):
-    i.color = color
-    i.clazz = clazz
-
-  def __enter__(i):
-    print(i.color, end="")
-
-  def __exit__(i, type, value, traceback):
-    if i.clazz == Fore:
-      print(Fore.RESET, end="")
-    else:
-      assert i.clazz == Style
-      print(Style.RESET_ALL, end="")
-    sys.stdout.flush()
-
-
-def plain(s): print(s, end="")
-
-
-def red(s):
-  with Highlight(Fore, Fore.RED):
-    print(s, end="")
-
-
-def the(b4):
-  # Tool for creating our global 'THE'
-  now = o()
-
-  def options(x): return x if isinstance(x, list) else [x]
-  for k in b4["what"].keys():
-    now[k] = options(b4["what"][k]["what"])[0]
-  return now
-
-# Printing
-
-
-def kv(d, keys=None):
-  # print dictionary, in key sort order
-  keys = keys or sorted(list(d.keys()))
-
-  def pretty(x): return round(x, DECIMALS) if isinstance(x, float) else x
-  return '{' + ', '.join(['%s: %s' % (k, pretty(d[k]))for k in keys]) + '}'
-
-
-# Command line option manager
-
-
-def main(about, argv=None):
-  # Configure command line parser from keys of dictonary 'd'
-  d = the(about)
-  argv = argv or sys.argv[1:]
-  keys = sorted([k for k in about["what"].keys()])
-  mark = lambda k: "" if isinstance(d[k], bool) else ":"
-  opts = 'hC%s' % ''.join(['%s%s' % (k[0], mark(k)) for k in keys])
-  oops = lambda x, y=2: print(x) or sys.exit(y)
-
-  def one(d, slot, opt, arg):
-    what = slot["what"]
-    if isinstance(what, bool):
-      return not what
-    want = slot["want"]
-    arg = (slot.get("make", want))(arg)
-    if not want(arg):
-      oops("%s: %s is not %s" % (opt, arg, want.__name__))
-    if isinstance(what, list):
-      if arg not in what:
-        oops("%s: %s is not one of %s" % (opt, arg, what))
-    return arg
-
-  def oneLine():
-    print(about["why"], "\n", '(c) ', about["when"], ", ", about["who"], sep="")
-
-  def usage():
-    oneLine()
-    print('\nUSAGE: ',
-          about["how"], " -", ''.join([s for s in opts if s != ':']),
-          sep="", end="\n\n")
-    for k in keys:
-      print("  -%s\t%-10s\t%s    (default=%s)" % (
-          k[0], k, about["what"][k]["why"], d[k]))
-    print("  -h\t%-10s\tshow help" % '')
-    oops("  -C\t%-10s\tshow copright" % '', 0)
-
-  def copyrite():
-    oneLine()
-    oops(about["copyright"], 0)
-
-  try:
-    com, args = getopt.getopt(argv, opts)
-    for opt, arg in com:
-      if opt == '-h':
-        usage()
-      elif opt == '-C':
-        copyrite()
-      else:
-        for k in keys:
-          if opt[1] == k[0]:
-            try:
-              d[k] = one(d, about["what"][k], opt, arg)
-            except Exception as err:
-              oops(err)
-  except getopt.GetoptError as err:
-    oops(err)
-  return d
-
-
-THE = main(ABOUT)
-
-# Data Management
-
-
-def rows(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
-  # World's smallest csv reader?
-  use = None
-  with open(file) as fs:
-    for n, line in enumerate(fs):
-      line = re.sub(doomed, "", line)
-      cells = [z.strip() for z in line.split(sep)]
-      if len(cells) > 0:
-        use = use or [n for n, x in enumerate(cells) if x[0] != skip]
-        assert len(cells) == len(
-            use), 'row %s has not %s cells' % (n, len(use))
-        yield [cells[n] for n in use]
-
-
-def data(src, rules={"$": float, "<": float, ">": float}):
-  # Coerce strings to things using rules seen on line 1
-  changes = None
-
-  def change1(x, f): return x if x[0] == "?" else f(x)
-  for row in src:
-    if changes:
-      row = [change1(x, f) for x, f in zip(row, changes)]
-    else:
-      changes = [rules.get(x[0], lambda z:z) for x in row]
-    yield row
-
-
-def xy(src, rules=['<', '>']):
-  # Seperate rows into decision and objectives.
-  decs, objs = None, None
-  for row in src:
-    decs = decs or [n for n, x in enumerate(row) if not x[0] in rules]
-    objs = objs or [n for n, x in enumerate(row) if x[0] in rules]
-    yield [row[n] for n in decs], [row[n] for n in objs]
-
-
-# ---------------------------------
+from lib    import *
+from config import *
+
+THE = main(CONFIG())
+DECIMALS = THE.decimals
 
 @demo
 def FORMO(): 
   "Simple start up"
-  print(ABOUT["why"])
+  print(CONFIG()["why"])
 
 # -------------
-
-@demo
-def CSV():
-  for n, r in enumerate(data(rows(THE["DATA"]))):
-    if n < 10:
-      print(r)
 
 class Row(o):
   id = 0
@@ -479,38 +137,6 @@ def fastdom(t):
   few = max(THE.few, len(t.rows)**THE.power)
   return recurse(t.rows, 0)
 
-def tree(t):
-  if t:
-    yield t
-    for u in tree(t.left):
-      yield u
-    for v in tree(t.right):
-      yield v
-
-
-def supertree(t):
-  if t:
-    yield t
-    if t._up:
-      for u in supertree(t._up):
-        yield u
-
-
-def subtree(t):
-  if t:
-    for u in subtree(t.left):
-      yield u
-    for v in subtree(t.right):
-      yield v
-    yield t
-
-
-def leaves(t):
-  for u in subtree(t):
-    if not u.left and not u.right:
-      yield u
-
-
 def table(file):
   t = None
   for x, y in xy(data(rows(file))):
@@ -574,70 +200,6 @@ def combine(ranges, few):
   if ands and len(ands) > few:
     return keys, Num(ands, f=lambda r: r.dom), len(ranges)
 
-
-class Thing(o):
-  def __init__(i, inits=[], f=lambda z: z):
-    i.locals()
-    i.rows = []
-    i.n, i._f = 0, f
-    [i + x for x in inits]
-
-  def __add__(i, x):
-    x = i._f(x)
-    if x != '?':
-      i.n += 1
-      i._add(x)
-
-  def simpler(i, j, k):
-    return i.doubt() > THE.undoubt * (
-        j.doubt() * j.n / i.n + k.doubt() * k.n / i.n)
-
-
-class Num(Thing):
-  def locals(i):
-    i.mu = i.m2 = 0
-    i.hi = -10**32
-    i.lo = 10**32
-
-  def doubt(i):
-    return i.sd()
-
-  def _add(i, x):
-    i.hi = max(i.hi, x)
-    i.lo = min(i.lo, x)
-    delta = x - i.mu
-    i.mu += delta / i.n
-    i.m2 += delta * (x - i.mu)
-
-  def sd(i):
-    return (i.m2 / (i.n - 1))**0.5
-
-  def __repr__(i):
-    return 'Num' + kv(dict(lo=i.lo, hi=i.hi, mu=i.mu, sd=i.sd(), n=i.n))
-
-
-class Sym(Thing):
-  def locals(i): i.seen, i._ent = {}, None
-
-  def doubt(i):
-    return i.ent()
-
-  def _add(i, x):
-    i.seen[x] = i.seen.get(x, 0) + 1
-    i._ent = None
-
-  def ent(i):
-    if i._ent is None:
-      i._ent = 0
-      for _, v in i.seen.items():
-        p = v / i.n
-        i._ent -= p * math.log(p, 2)
-    return i._ent
-
-  def __repr__(i):
-    return 'Sym' + kv(dict(seen=i.seen, ent=i.ent(), n=i.n))
-
-
 def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
   "returns nil if nothing"
   def makeNode(lst, lvl=0, up=None):
@@ -678,25 +240,11 @@ def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
   print(dict(epsilon=epsilon, few=few))
   return recurse(up=root)
 
-
-def showt(t, tab="|.. ", pre="", lvl=0, val=lambda z: ""):
-  if t:
-    if lvl == 0:
-      print("")
-    val(t)
-    print(' ' + tab * lvl + pre)
-    if t.left:
-      showt(t.left, tab, "< ", lvl + 1, val)
-    if t.right:
-      showt(t.right, tab, "> ", lvl + 1, val)
-
-
 def showNode(z):
   f = plain if z.simpler else red
   f('%s y=%6.3g sd=%6.3g  when %6.3g <= x <= %6.3g [%5s]' % (
     "\u2714" if z.simpler else "\u2717",
     z.y.mu, z.y.sd(), z.x.lo, z.x.hi, z.y.n))
-
 
 def _grow(X=same, Y=same, N=10000):
   def flats(y):
@@ -715,42 +263,31 @@ def _grow(X=same, Y=same, N=10000):
   print([u.x.lo for u in leaves(tree) if u.simpler])
   return tree
 
-
 def prune(t):
   for u in subtree(t):
     # if not u.simpler:
     if u.left and u.right:
-      if u.y.simpler(u.left.y, u.right.y):
+      if u.y.simpler(u.left.y, u.right.y, THE.undoubt):
         for v in supertree(u.left):
           v.simpler = True
         for w in supertree(u.right):
           w.simpler = True
   return t
 
+@demo
+def GROW0(): _grow(N=4096)
 
 @demo
-def GROW0():
-  _grow(N=4096)
-
-
-@demo
-def GROW1():
-  _grow(X=lambda x: 0 if x < 40 else x, N=64)
-
+def GROW1(): _grow(X=lambda x: 0 if x < 40 else x, N=64)
 
 @demo
 def GROW2():
   def xx(x):
-    if x < 10:
-      return x
-    if x < 40:
-      return 40
-    if x < 70:
-      return x
+    if x < 10: return x
+    if x < 40: return 40
+    if x < 70: return x
     return 70
   _grow(X=xx, N=256)
 
-
 if __name__ == '__main__':
-  DECIMALS = THE.decimals
   demo(act=THE.MAIN)
