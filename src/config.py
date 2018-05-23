@@ -71,8 +71,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
             why="enable heuristic domination (useful for large data sets)",
             what=False,
             want=bool),
-        tiny=dict(
-            why="for speed mode, min distance delta for retries",
+        trivial=dict(
+            why="for speed mode, min distance delta required to trigger retries",
             what=0.05,
             want=float),
         undoubt=dict(

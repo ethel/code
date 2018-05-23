@@ -57,7 +57,7 @@ class Table:
   def doms(i):
     if not i._dom:
       i._dom = True
-      fastdom(i) if THE.speed else slowdom(i)
+      fastdom(i,THE.few, THE.power, THE.trivial) if THE.speed else slowdom(i)
     return i
 
   def splits(i):
@@ -87,7 +87,7 @@ def slowdom(t):
       if row1.dominates(row2, t.y.weights, t.y.lo, t.y.hi):
         row1.dom += 1
 
-def fastdom(t):
+def fastdom(t, few=20, power=0.5, trivial=0.05):
   z   = 10**-32
   def dist(i, j):
     d,n = 0,z
@@ -105,36 +105,34 @@ def fastdom(t):
       if d > most: most,out = d,j
     return out
 
-  def recurse(lst, rank, west=None, east=None,c=None,lvl=1):
-    n   = len(lst)
-    mid = n // 2
-    print()
-    if n < few:
-      rank += 1
+  def recurse(lst, rank, worst=None, excellent=None):
+    if len(lst) < few:
+      rank += len(lst)
       for one in lst: 
         one.dom = rank  
     else:
-      west = west or furthest(any(lst),  lst)
-      east = east or furthest(west, lst)
-      c    = c    or dist(west,east)
+      worst     = worst     or furthest(any(lst),  lst)
+      excellent = excellent or furthest(worst, lst)
+      if worst.dominates(excellent, t.y.weights, t.y.lo, t.y.hi):
+        return recurse(lst, rank, excellent, worst)
+      c   = dist(worst,excellent)
       tmp = []
       for row in lst:
-        a = dist(west, row)
-        if a > THE["tiny"]+c:
-          return recurse(lst, rank, west=row, east=west, c=a, lvl=lvl)
-        b = dist(east, row)
-        if b > THE["tiny"]+c:
-          return recurse(lst, rank, west=row, east=east, c=b, lvl=lvl)
+        a = dist(worst, row)
+        if a > trivial+c:
+          return recurse(lst, rank, row, worst)
+        b = dist(excellent, row)
+        if b > trivial+c:
+          return recurse(lst, rank, row, excellent)
         x    = (a*a + c*c - b*b) / (2*c + z)
         tmp += [(x,row)]
       tmp = [pair[1] for pair in sorted(tmp)]
-      rest,best = tmp[0:mid], tmp[mid:]
-      flip = west.dominates(east, t.y.weights, t.y.lo, t.y.hi) 
-      rank = recurse(best if flip else rest, rank, lvl= lvl+1) 
-      rank = recurse(rest if flip else best, rank, lvl= lvl+1)
+      mid = len(lst)//2
+      rank = recurse(lst[:mid], rank) 
+      rank = recurse(lst[mid:], rank)
     return rank
  
-  few = max(THE.few, len(t.rows)**THE.power)
+  few = max(few, len(t.rows)**power)
   return recurse(t.rows, 0)
 
 def table(file):
@@ -163,7 +161,7 @@ def FASTDOM():
   seed(1)
   t = table(THE["DATA"])
   t.doms()
-  fastdom(t)
+  fastdom(t,THE.few, THE.power, THE.trivial)
   t.rows = sorted(t.rows)
   for row in t.rows: print("<", row.y, row.dom, row.dom1)
 
@@ -175,11 +173,11 @@ def SPLITS(file=THE["DATA"]):
   for x in lst:
     print(x.key, x, len(x.rows))
   out = []
-  for sub in subsets(lst[:THE["elite"]]):
-    one = combine(sub, THE["least"])
+  for sub in subsets(lst[:THE.elite]):
+    one =  combine(sub, THE.least)
     if one:
-      out += [one]
-  print()
+      keys, some, cardinality = one
+      out += [(keys, Num(some, f=lambda r: r.dom), cardinality)]
   out = sorted(out, key=lambda z:len(z[0]))
   best = -1
   for a,b,c in out: 
@@ -188,7 +186,6 @@ def SPLITS(file=THE["DATA"]):
       print(int(b.mu), b.n, a)
 
 def combine(ranges, few):
-  print(".", end="")
   ors, keys = {}, {}
   for r in ranges:
     col, val = r.key
@@ -198,7 +195,7 @@ def combine(ranges, few):
   for one in ors.values():
     ands = ands & one if ands else one
   if ands and len(ands) > few:
-    return keys, Num(ands, f=lambda r: r.dom), len(ranges)
+    return keys, ands, len(ranges)
 
 def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
   "returns nil if nothing"
