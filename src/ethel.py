@@ -82,13 +82,17 @@ class Table:
     return val
 
 def slowdom(t):
+  "O(N)^2 dom"
   for row1 in t.rows:
     for row2 in t.rows:
       if row1.dominates(row2, t.y.weights, t.y.lo, t.y.hi):
         row1.dom += 1
 
 def fastdom(t, few=20, power=0.5, trivial=0.05):
+  "O(Nlog(N)) approximate dom"
   z   = 10**-32
+  few = max(few, len(t.rows)**power)
+
   def dist(i, j):
     d,n = 0,z
     for a,b,lo,hi in zip(i.y, j.y, t.y.lo, t.y.hi):
@@ -105,35 +109,34 @@ def fastdom(t, few=20, power=0.5, trivial=0.05):
       if d > most: most,out = d,j
     return out
 
-  def recurse(lst, rank, worst=None, excellent=None):
-    if len(lst) < few:
-      rank += len(lst)
-      for one in lst: 
-        one.dom = rank  
-    else:
+  def div(lst, rank, worst=None, excellent=None):
+    if len(lst) > few:
       worst     = worst     or furthest(any(lst),  lst)
       excellent = excellent or furthest(worst, lst)
       if worst.dominates(excellent, t.y.weights, t.y.lo, t.y.hi):
-        return recurse(lst, rank, excellent, worst)
+        return div(lst,  rank, excellent, worst)
       c   = dist(worst,excellent)
       tmp = []
       for row in lst:
         a = dist(worst, row)
         if a > trivial+c:
-          return recurse(lst, rank, row, worst)
+          return div(lst, rank,  row, worst)
         b = dist(excellent, row)
         if b > trivial+c:
-          return recurse(lst, rank, row, excellent)
+          return div(lst, rank,  row, excellent)
         x    = (a*a + c*c - b*b) / (2*c + z)
         tmp += [(x,row)]
       tmp = [pair[1] for pair in sorted(tmp)]
       mid = len(lst)//2
-      rank = recurse(lst[:mid], rank) 
-      rank = recurse(lst[mid:], rank)
+      rank = div(lst[:mid],rank) 
+      rank= div(lst[mid:], rank)
+    else:
+      rank += len(lst)
+      for one in lst: 
+        one.dom = rank
     return rank
- 
-  few = max(few, len(t.rows)**power)
-  return recurse(t.rows, 0)
+
+  return div(t.rows,0)
 
 def table(file):
   t = None
