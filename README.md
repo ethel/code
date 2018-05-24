@@ -3,3 +3,18 @@
 # ethel
 
 Multi-objective rule engine
+
+
+# Usage
+
+## Installation
+
+## Requirements
+
+# Compatibility
+
+# Licence
+
+# Authors
+
+mgoal was written by Tim Menzies.
