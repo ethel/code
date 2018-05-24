@@ -6,6 +6,7 @@ from config import *
 THE = main(CONFIG())
 DECIMALS = THE.decimals
 
+
 @demo
 def FORMO(): 
   "Simple start up"
@@ -289,5 +290,12 @@ def GROW2():
     return 70
   _grow(X=xx, N=256)
 
+def globs():  
+  for k,v in globals().items():
+     if callable(v):
+         print(k, v.__module__)
+
 if __name__ == '__main__':
   demo(act=THE.MAIN)
+  globs()
+

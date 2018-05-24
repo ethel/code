@@ -333,4 +333,9 @@ class Sym(Thing):
   def __repr__(i):
     return 'Sym' + kv(dict(seen=i.seen, ent=i.ent(), n=i.n))
 
+def globs():
+    for k,v in globals().items():
+        if callable(v):
+            print(type(v),k,v)
+
 
