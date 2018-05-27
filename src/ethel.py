@@ -221,7 +221,7 @@ def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
       m1 += 1
     while m2 > 0 and X(m2) == X(m2 - 1):
       m2 -= 1
-    m = m2 if (m - m2) < (m1 - m) else m
+    m = m2 if (m - m2) < (m1 - m) else m1
     return m
 
   def recurse(lo=0, hi=len(lst), up=None, lvl=0):
@@ -290,12 +290,6 @@ def GROW2():
     return 70
   _grow(X=xx, N=256)
 
-def globs():  
-  for k,v in globals().items():
-     if callable(v):
-         print(k, v.__module__)
-
 if __name__ == '__main__':
   demo(act=THE.MAIN)
-  globs()
 
