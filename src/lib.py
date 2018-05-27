@@ -241,9 +241,8 @@ def tree(t):
 def supertree(t):
   if t:
     yield t
-    if t._up:
-      for u in supertree(t._up):
-        yield u
+    for u in supertree(t._up):
+      yield u
 
 def subtree(t):
   if t:

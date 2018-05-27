@@ -266,7 +266,6 @@ def _grow(X=same, Y=same, N=10000):
 
 def prune(t):
   for u in subtree(t):
-    # if not u.simpler:
     if u.left and u.right:
       if u.y.simpler(u.left.y, u.right.y, THE.undoubt):
         for v in supertree(u.left):
