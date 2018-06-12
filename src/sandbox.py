@@ -7,9 +7,10 @@ def once(f):
   return g
 
 def kw(i,bad="_"):
-  keys = lambda d: [x for x in d.keys() if x[0] is not bad]
-  pairs= lambda d: {k:d[k] for k in sorted(keys(d))}
-  return str(pairs(i.__dict__))
+  keys = lambda d: sorted([x for x in d.keys() if x[0] is not bad])
+  pairs= lambda d: ['%s: %s' % (k,show(d[k])) for k in keys(d)]
+  show = lambda x: x.__name__ if callable(x) else x
+  return i.__class__.__name__+'<'+', '.join(pairs(i.__dict__)) +'>'
 
 class Fred:
   def __init__(i,a=1): 
