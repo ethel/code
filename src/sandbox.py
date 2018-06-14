@@ -1,7 +1,7 @@
 def once(f):
   s0 = "_" + f.__name__
   def wrapped(i,*l,**k):
-    d = i.__dict__
+    d = i._cache
     s = (s0,l[0]) if l else s0
     old = d.get(s,None)
     if old: return old
@@ -17,7 +17,13 @@ def kw(d, pre=""):
   show = lambda x: x.__name__ if callable(x) else str(x)
   return pre+'<' + ', '.join(pairs()) + '>'
 
-class Fred:
+class Cache:
+  def __new__(i, *l, **kw):
+    tmp = super().__new__(i,*l,**kw)
+    tmp._cache= {}
+    return tmp
+
+class Fred (Cache):
   def __init__(i,a=1): 
     i.a = a
     i.k = 10
