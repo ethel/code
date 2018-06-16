@@ -23,6 +23,8 @@ class Cache:
     tmp._cache= {}
     return tmp
 
+
+
 class Fred (Cache):
   def __init__(i,a=1): 
     i.a = a
