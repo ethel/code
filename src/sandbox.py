@@ -47,7 +47,7 @@ print(x.b())
 print(x.b())
 print(x.b())
 
-for i in range(10,1,-2):
+for i in range(6,100,15):
   print(i,x.fib(i))
   if i == 6:
     x.__dict__[('_fib',2)] = None
