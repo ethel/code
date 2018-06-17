@@ -1,4 +1,62 @@
-import re
+import re,os
+def main(about, argv=None):
+  # Configure command line parser from keys of dictonary 'd'
+  d = the(about)
+  argv = argv or sys.argv[1:]
+  keys = sorted([k for k in about["what"].keys()])
+  mark = lambda k: "" if isinstance(d[k], bool) else ":"
+  opts = 'hC%s' % ''.join(['%s%s' % (k[0], mark(k)) for k in keys])
+  oops = lambda x, y=2: print(x) or sys.exit(y)
+
+  def one(d, slot, opt, arg):
+    what = slot["what"]
+    if isinstance(what, bool):
+      return not what
+    want = slot["want"]
+    arg = (slot.get("make", want))(arg)
+    if not want(arg):
+      oops("%s: %s is not %s" % (opt, arg, want.__name__))
+    if isinstance(what, list):
+      if arg not in what:
+        oops("%s: %s is not one of %s" % (opt, arg, what))
+    return arg
+
+  def oneLine():
+    print(about["why"], "\n", '(c) ', about["when"], ", ", about["who"], sep="")
+
+  def usage():
+    oneLine()
+    print('\nUSAGE: ',
+          about["how"], " -", ''.join([s for s in opts if s != ':']),
+          sep="", end="\n\n")
+    for k in keys:
+      print("  -%s\t%-10s\t%s    (default=%s)" % (
+          k[0], k, about["what"][k]["why"], d[k]))
+    print("  -h\t%-10s\tshow help" % '')
+    oops("  -C\t%-10s\tshow copright" % '', 0)
+
+  def copyrite():
+    oneLine()
+    oops(about["copyright"], 0)
+
+  try:
+    com, args = getopt.getopt(argv, opts)
+    for opt, arg in com:
+      if opt == '-h':
+        usage()
+      elif opt == '-C':
+        copyrite()
+      else:
+        for k in keys:
+          if opt[1] == k[0]:
+            try:
+              d[k] = one(d, about["what"][k], opt, arg)
+            except Exception as err:
+              oops(err)
+  except getopt.GetoptError as err:
+    oops(err)
+  return d
+
 
 def once(f):
   s0 = "_" + f.__name__
@@ -55,6 +113,8 @@ for i in range(6,100,15):
     x.__dict__[('_fib',2)] = None
 print(x)
 
+###############################################
+
 class Xpect(object):
   all = {}
   def __init__(i, act=None, prompt=None, flag=None, 
@@ -62,23 +122,16 @@ class Xpect(object):
     i.act,i.flag,i.ako,  i.val,i.prompt = \
      None,  flag,  ako,default,  prompt
   def ftype(i):
-    tmp = i.ako if callable(i.ako) else type(i.ako[0])
-    return tmp.__name__.upper()
+    return i.ako.__name__.upper()
   def bad(i,x):
-    if isinstance(i.ako,list):
-      if x not in i.ako:
-        return '%s not one of %s' % (x,i.ako)
-    else:
-      if not i.ako(x)
-        return '%s is not %s' % i.ako.__name__
+    if not i.ako(x):
+      return '%s is not %s' % i.ako.__name__
   @staticmethod
   def call(x):
     meta = Xpect.all[x]
     f    = meta[0]
     args = [y.val for y in meta[1:]]
     return f(*args)
-  def __repr__(i):
-    return str(i.__dict__)
   def help(x):
     meta = Xpect.all[x]
     name = meta[0].__name__
@@ -91,6 +144,13 @@ class Xpect(object):
     widths= ''.join(['  %%-%ss' % max(*m) for m in zip(*lens)])
     [print(widths % one) for one in show]
 
+class Xpects(Xpect):
+  def ftype(i):
+    return type(i.ako[0]).__name__.upper()
+  def bad(i,x):
+    if x not in i.ako:
+      return '%s not one of %s' % (x,i.ako)
+
 def flags(**kw):
   def decorator(f):
     s = f.__name__
@@ -102,7 +162,6 @@ def flags(**kw):
     return f
   return decorator
 
-import os
 def filep(f) : return os.exist(f)
 def posint(f): return int(f) and f >= 0
 
@@ -111,7 +170,7 @@ Int    = lambda x,y: Xpect(ako= int,   default=x,    prompt=y)
 Float  = lambda x,y: Xpect(ako= float, default=x,    prompt=y) 
 File   = lambda x,y: Xpect(ako= filep, default=x,    prompt=y)
 Bool   = lambda x,y: Xpect(ako= bool,  default=x,    prompt=y)
-OneOf  = lambda x,y: Xpect(ako= x,     default=x[0], prompt=y)
+OneOf  = lambda x,y: Xpects(ako= x,    default=x[0], prompt=y)
 
 @flags(what    = String("world","print string"), 
        repeats = Int(3,"number of repeats"))

@@ -1,5 +1,6 @@
 from config import CONFIG
 
+import argparse
 import getopt
 import math
 import os
@@ -108,7 +109,6 @@ class Highlight:
 
 def plain(s): print(s, end="")
 
-
 def red(s):
   with Highlight(Fore, Fore.RED):
     print(s, end="")
@@ -131,64 +131,27 @@ def kv(d, keys=None):
 
 # Command line option manager
 
+def elp(h, **d):
+  def elp1():
+    if val is False :
+      return dict(help=h, action="store_true")
+    if isinstance(val,list):
+      return dict(help=h, choices=val,default=default, metavar=m ,type=t)
+    else:
+      return dict(help=h + ("; e.g. %s" % val), default=default, metavar=m, type=t)
+  key,val = d.items()[0]
+  default = val[0] if isinstance(val,list) else val
+  m,t = "S",str
+  if isinstance(default,int)  : m,t= "I",int
+  if isinstance(default,float): m,t= "F",float
+  return "--" + key, elp1()
 
-def main(about, argv=None):
-  # Configure command line parser from keys of dictonary 'd'
-  d = the(about)
-  argv = argv or sys.argv[1:]
-  keys = sorted([k for k in about["what"].keys()])
-  mark = lambda k: "" if isinstance(d[k], bool) else ":"
-  opts = 'hC%s' % ''.join(['%s%s' % (k[0], mark(k)) for k in keys])
-  oops = lambda x, y=2: print(x) or sys.exit(y)
-
-  def one(d, slot, opt, arg):
-    what = slot["what"]
-    if isinstance(what, bool):
-      return not what
-    want = slot["want"]
-    arg = (slot.get("make", want))(arg)
-    if not want(arg):
-      oops("%s: %s is not %s" % (opt, arg, want.__name__))
-    if isinstance(what, list):
-      if arg not in what:
-        oops("%s: %s is not one of %s" % (opt, arg, what))
-    return arg
-
-  def oneLine():
-    print(about["why"], "\n", '(c) ', about["when"], ", ", about["who"], sep="")
-
-  def usage():
-    oneLine()
-    print('\nUSAGE: ',
-          about["how"], " -", ''.join([s for s in opts if s != ':']),
-          sep="", end="\n\n")
-    for k in keys:
-      print("  -%s\t%-10s\t%s    (default=%s)" % (
-          k[0], k, about["what"][k]["why"], d[k]))
-    print("  -h\t%-10s\tshow help" % '')
-    oops("  -C\t%-10s\tshow copright" % '', 0)
-
-  def copyrite():
-    oneLine()
-    oops(about["copyright"], 0)
-
-  try:
-    com, args = getopt.getopt(argv, opts)
-    for opt, arg in com:
-      if opt == '-h':
-        usage()
-      elif opt == '-C':
-        copyrite()
-      else:
-        for k in keys:
-          if opt[1] == k[0]:
-            try:
-              d[k] = one(d, about["what"][k], opt, arg)
-            except Exception as err:
-              oops(err)
-  except getopt.GetoptError as err:
-    oops(err)
-  return d
+def options(before, after, *lst):
+  parser = argparse.ArgumentParser(epilog=after, description = before,
+              formatter_class = argparse.RawDescriptionHelpFormatter)
+  for key, rest in lst:
+    parser.add_argument(key,**rest)
+  return parser.parse_args()
 
 def rows(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
   # ascii file to rows of cells
