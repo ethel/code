@@ -64,16 +64,17 @@ def elp(h, **d):
                       default=default, metavar=m, type=t)
   key,val = list(d.items())[0]
   default = val[0] if isinstance(val,list) else val
-  m,t = "S",str
-  if isinstance(default,int)  : m,t= "I",int
-  if isinstance(default,float): m,t= "F",float
+  m,t = "STR",str
+  if isinstance(default,int)  : m,t= "INT",int
+  if isinstance(default,float): m,t= "NUM",float
   return  key, elp1()
 
 def options(before, after, *lst):
   parser = argparse.ArgumentParser(epilog=after, description = before, 
+          fromfile_prefix_chars='@',
                                    add_help=False,
               formatter_class = argparse.RawDescriptionHelpFormatter)
-  seen=[]
+  seen=["h"]
   for group in lst:
       sub = parser.add_argument_group(group[0])
       for key, rest in group[1:]:
@@ -117,7 +118,6 @@ def demo(f=None, act=None, all=[]):
         return try1(fun)
     print("unknown %s" % act)
   else:
-    print(all)
     [try1(fun) for fun in all]
     print("\n# PASS= %s FAIL= %s %%PASS = %s%%" % (
           PASS, FAIL, int(round(PASS * 100 / (PASS + FAIL + 0.001)))))
@@ -150,7 +150,6 @@ def timeit(f):
 
 # JavaScript Envy
 
-
 class o(object):
   # Javascript envy. Now 'o' is like a JS object.
   def __init__(i, **kv): i.__dict__.update(kv)
@@ -163,15 +162,11 @@ class o(object):
 
 # Coloring
 
-
 class Highlight:
   def __init__(i, clazz, color):
     i.color = color
     i.clazz = clazz
-
-  def __enter__(i):
-    print(i.color, end="")
-
+  def __enter__(i): print(i.color, end="")
   def __exit__(i, type, value, traceback):
     if i.clazz == Fore:
       print(Fore.RESET, end="")
@@ -180,19 +175,16 @@ class Highlight:
       print(Style.RESET_ALL, end="")
     sys.stdout.flush()
 
-
 def plain(s): print(s, end="")
 
 def red(s):
   with Highlight(Fore, Fore.RED):
     print(s, end="")
 
-
 def the(b4):
   # Tool for creating our global 'THE'
   now = o()
-
-  def options(x): return x if isinstance(x, list) else [x]
+  options = lambda x: x if isinstance(x, list) else [x]
   for k in b4["what"].keys():
     now[k] = options(b4["what"][k]["what"])[0]
   return now
@@ -218,8 +210,7 @@ def rows(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
 def data(src, rules={"$": float, "<": float, ">": float}):
   "rows of cells coerced to values according to the rules seen on line 1"
   changes = None
-
-  def change1(x, f): return x if x[0] == "?" else f(x)
+  change1 = lambda x, f: x if x[0] == "?" else f(x)
   for row in src:
     if changes:
       row = [change1(x, f) for x, f in zip(row, changes)]
@@ -237,11 +228,15 @@ def xy(src, rules=['<', '>']):
 
 @demo
 def CSV():
-  for n, r in enumerate(data(rows(THE["DATA"]))):
+  for n, r in enumerate(data(rows(THE.data))):
     if n < 10:
       print(r)
 
 #-----------------------------
+
+class Node(object):
+  def __init__(i,left=None,right=None,_up=None):
+    i.left, i.right, i._up = left, right, _up
 
 def tree(t):
   if t:
@@ -289,51 +284,37 @@ class Thing(o):
     i.rows = []
     i.n, i._f = 0, f
     [i + x for x in inits]
-
   def __add__(i, x):
     x = i._f(x)
     if x != '?':
       i.n += 1
       i._add(x)
-
   def simpler(i, j, k, undoubt=1.05):
     return i.doubt() > undoubt * (
         j.doubt() * j.n / i.n + k.doubt() * k.n / i.n)
-
 
 class Num(Thing):
   def locals(i):
     i.mu = i.m2 = 0
     i.hi = -10**32
     i.lo = 10**32
-
-  def doubt(i):
-    return i.sd()
-
+  def doubt(i): return i.sd()
+  def sd(i): return (i.m2 / (i.n - 1))**0.5
   def _add(i, x):
     i.hi = max(i.hi, x)
     i.lo = min(i.lo, x)
     delta = x - i.mu
     i.mu += delta / i.n
     i.m2 += delta * (x - i.mu)
-
-  def sd(i):
-    return (i.m2 / (i.n - 1))**0.5
-
   def __repr__(i):
     return 'Num' + kv(dict(lo=i.lo, hi=i.hi, mu=i.mu, sd=i.sd(), n=i.n))
 
-
 class Sym(Thing):
   def locals(i): i.seen, i._ent = {}, None
-
-  def doubt(i):
-    return i.ent()
-
+  def doubt(i): return i.ent()
   def _add(i, x):
     i.seen[x] = i.seen.get(x, 0) + 1
     i._ent = None
-
   def ent(i):
     if i._ent is None:
       i._ent = 0
@@ -341,7 +322,6 @@ class Sym(Thing):
         p = v / i.n
         i._ent -= p * math.log(p, 2)
     return i._ent
-
   def __repr__(i):
     return 'Sym' + kv(dict(seen=i.seen, ent=i.ent(), n=i.n))
 
@@ -349,9 +329,6 @@ def globs():
     for k,v in globals().items():
         if callable(v):
             print(type(v),k,v)
-
-
-
 
 @demo
 def FORMO(): 
@@ -450,11 +427,7 @@ def fastdom(t, few=20, power=0.5, trivial=0.05):
     return d**0.5/n**0.5
 
   def furthest(i, lst):
-    most,out = -1,i
-    for j in lst:
-      d = dist(i,j)
-      if d > most: most,out = d,j
-    return out
+    return sorted([(dist(i,j),j) for j in lst])[-1][1]
 
   def div(lst, rank, worst=None, excellent=None):
     if len(lst) > few:
@@ -497,23 +470,23 @@ def table(file):
 
 @demo
 def DOM():
-  t = table(THE["DATA"])
+  t = table(THE.data)
   t.doms()
   t.rows = sorted(t.rows)
-  for row in t.rows[:10]:
-    print("<", row.y, row.dom)
+  for row in t.rows[:10]: print("<", row.y, row.dom)
   print()
-  for row in t.rows[-10:]:
-    print(">", row.y, row.dom)
+  for row in t.rows[-10:]: print(">", row.y, row.dom)
 
 @demo
 def FASTDOM():
   seed(1)
-  t = table(THE["DATA"])
+  t = table(THE.data)
   t.doms()
   fastdom(t,THE.few, THE.power, THE.trivial)
   t.rows = sorted(t.rows)
-  for row in t.rows: print("<", row.y, row.dom, row.dom1)
+  for row in t.rows[:10]: print("<", row.y, row.dom)
+  print()
+  for row in t.rows[-10:]: print(">", row.y, row.dom)
 
 @demo
 def SPLITS(file=THE.data):
@@ -547,13 +520,16 @@ def combine(ranges, few):
   if ands and len(ands) > few:
     return keys, ands, len(ranges)
 
+class DecisionNode(Node):
+  def __init__(i,x,y,level,left=None,right=None,_up=None):
+    i.x,i.y,i.level = x,y,level
+    i.simpler = False
+    super().__init__(left=left,right=right,_up=_up)
+
 def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
   "returns nil if nothing"
   def makeNode(lst, lvl=0, up=None):
-    tmp = o(x=Num(lst, f=x), y=klass(lst, f=y),
-            level=lvl,
-            _up=up,
-            simpler=False, left=None, right=None)
+    tmp = DecisionNode(x=Num(lst, f=x), y=klass(lst, f=y), level=lvl, _up=up)
     tmp.y.rows = lst
     return tmp
 
@@ -563,10 +539,8 @@ def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
 
   def mid(lo, hi):
     m = m1 = m2 = int(lo + (hi - lo) / 2)
-    while m1 < hi - 1 and X(m1 - 1) == X(m1):
-      m1 += 1
-    while m2 > 0 and X(m2) == X(m2 - 1):
-      m2 -= 1
+    while m1 < hi - 1 and X(m1 - 1) == X(m1): m1 += 1
+    while m2 > 0 and X(m2) == X(m2 - 1):      m2 -= 1
     m = m2 if (m - m2) < (m1 - m) else m1
     return m
 
