@@ -31,42 +31,61 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """,
-  elp("define shall change", cohen=[0.2, 0.1,0.3,0.5]),
-  elp("input data svs file", data=["../data/auto.csv"]),
-  elp("decimals to display floats",decimals=3),
-  elp("build rules from top 'elite' number of ranges",elite=10),
-  elp("min bin size = max(few, N^power)", few=10),
-  elp("min supprot for acceptable rules", least=20),
-  elp("start up action", main="FORMO"),
-  elp("min bin size = max(few, N^power)", power=0.5),
-  elp("enable heuristic comination",speed=False),
-  elp("for speed mode, min distance to trigger retries",trivial=0.05),
-  elp("doubt reduction must be larger than x*unboubt", undoubt=0.05),
-  elp("trace all calls", verbose=False)
-]
+  ["general",
+      elp("start up action", main="FORMO"),
+      elp("random number seed", seed=1),
+      elp("define small change", cohen=[0.2, 0.1,0.3,0.5]),
+      elp("input data svs file", data="../data/auto.csv"),
+      elp("trace all calls", verbose=False),
+      elp("decimals to display floats",decimals=3)
+  ],["top-down clustering",
+      elp("min bin size = max(few, N^power)", few=10),
+      elp("min bin size = max(few, N^power)", power=0.5),
+      elp("enable heuristic comination",speed=False),
+      elp("for speed mode, min distance to trigger retries",trivial=0.05)
+  ],["bottom-up pruning",
+      elp("doubt reduction must be larger than x*unboubt", undoubt=0.05)
+  ],["rule generation",
+      elp("min supprot for acceptable rules", least=20),
+      elp("build rules from top 'elite' number of ranges",elite=10)
+  ]]
 
 # command-line opionts
 
 def elp(h, **d):
   def elp1():
     if val is False :
-      return dict(help=h, action="store_true")
-    if isinstance(val,list):
-      return dict(help=h, choices=val,default=default, metavar=m ,type=t)
-    else:
-      return dict(help=h + ("; e.g. %s" % val), default=default, metavar=m, type=t)
+          return dict(help=h, action="store_true")
+    elif isinstance(val,list):
+          return dict(help=h+(";e.g. %s" % val[0]), choices=val,          
+                      default=default, metavar=m ,type=t)
+    else: 
+          return dict(help=h + ("; e.g. %s" % val), 
+                      default=default, metavar=m, type=t)
   key,val = list(d.items())[0]
   default = val[0] if isinstance(val,list) else val
   m,t = "S",str
   if isinstance(default,int)  : m,t= "I",int
   if isinstance(default,float): m,t= "F",float
-  return "--" + key, elp1()
+  return  key, elp1()
 
 def options(before, after, *lst):
-  parser = argparse.ArgumentParser(epilog=after, description = before,
+  parser = argparse.ArgumentParser(epilog=after, description = before, 
+                                   add_help=False,
               formatter_class = argparse.RawDescriptionHelpFormatter)
-  for key, rest in lst:
-    parser.add_argument(key,**rest)
+  seen=[]
+  for group in lst:
+      sub = parser.add_argument_group(group[0])
+      for key, rest in group[1:]:
+        flag = key[0]
+        if flag in seen:
+           sub.add_argument("--"+key,**rest)
+        else:
+           sub.add_argument("-" + flag, "--"+key,**rest)
+           seen += [flag]
+      if group[0]=="general":
+        sub.add_argument("-h", "--help", action="help", 
+                          help="show this help message and exit")
   return parser.parse_args()
 
 THE = options(*help())
