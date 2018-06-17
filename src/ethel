@@ -4,7 +4,7 @@ from random import random as r, choice as any, seed as seed
 from colorama import Fore, Style
 from contextlib import contextmanager
 
-help=lambda: [
+def help(): return [
 """
 ETHEL v0.1.0 multi-objective rule generator
 (c) 2018: Tim Menzies timm@ieee.org, MIT license, v2
@@ -32,22 +32,22 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """,
   ["general",
-      elp("start up action", main="FORMO"),
-      elp("random number seed", seed=1),
-      elp("define small change", cohen=[0.2, 0.1,0.3,0.5]),
-      elp("input data svs file", data="../data/auto.csv"),
-      elp("trace all calls", verbose=False),
-      elp("decimals to display floats",decimals=3)
+      elp("start up action",                                main="FORMO"),
+      elp("random number seed",                             seed=1),
+      elp("define small change",                            cohen=[0.2, 0.1,0.3,0.5]),
+      elp("input data svs file",                            data="../data/auto.csv"),
+      elp("trace all calls",                                verbose=False),
+      elp("decimals to display floats",                     decimals=3)
   ],["top-down clustering",
-      elp("min bin size = max(few, N^power)", few=10),
-      elp("min bin size = max(few, N^power)", power=0.5),
-      elp("enable heuristic comination",speed=False),
+      elp("min bin size = max(few, N^power)",               few=10),
+      elp("min bin size = max(few, N^power)",               power=0.5),
+      elp("enable heuristic comination",                    speed=False),
       elp("for speed mode, min distance to trigger retries",trivial=0.05)
   ],["bottom-up pruning",
-      elp("doubt reduction must be larger than x*unboubt", undoubt=0.05)
+      elp("doubt reduction must be larger than x*unboubt",  undoubt=0.05)
   ],["rule generation",
-      elp("min supprot for acceptable rules", least=20),
-      elp("build rules from top 'elite' number of ranges",elite=10)
+      elp("min supprot for acceptable rules",               least=20),
+      elp("build rules from top 'elite' number of ranges",  elite=10)
   ]]
 
 # command-line opionts
@@ -64,9 +64,9 @@ def elp(h, **d):
                       default=default, metavar=m, type=t)
   key,val = list(d.items())[0]
   default = val[0] if isinstance(val,list) else val
-  m,t = "STR",str
-  if isinstance(default,int)  : m,t= "INT",int
-  if isinstance(default,float): m,t= "NUM",float
+  m,t = "S",str
+  if isinstance(default,int)  : m,t= "I",int
+  if isinstance(default,float): m,t= "F",float
   return  key, elp1()
 
 def options(before, after, *lst):
@@ -493,9 +493,10 @@ def SPLITS(file=THE.data):
   t = table(file)
   val = t.splits()
   lst = sorted(val.values(), key=lambda z: z.mu, reverse=True)
-  for x in lst:
-    print(x.key, x, len(x.rows))
+  #for x in lst: print(x.key, x, len(x.rows))
   out = []
+  print("lst ",lst[0].key, len(lst[0].rows))
+  print(t.x.head)
   for sub in subsets(lst[:THE.elite]):
     one =  combine(sub, THE.least)
     if one:
@@ -506,7 +507,10 @@ def SPLITS(file=THE.data):
   for a,b,c in out: 
     if b.mu > best:
       best = b.mu
-      print(int(b.mu), b.n, a)
+      print(int(b.mu), b.n, printRange(t,a))
+
+def printRange(t,d):
+   return {t.x.head[k]:d[k] for k in d}
 
 def combine(ranges, few):
   ors, keys = {}, {}
