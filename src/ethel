@@ -32,22 +32,23 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """,
   ["general",
-      elp("start up action",                                main="FORMO"),
-      elp("random number seed",                             seed=1),
-      elp("define small change",                            cohen=[0.2, 0.1,0.3,0.5]),
-      elp("input data svs file",                            data="../data/auto.csv"),
-      elp("trace all calls",                                verbose=False),
-      elp("decimals to display floats",                     decimals=3)
+      elp("start up action",                         main= "FORMO"),
+      elp("random number seed",                      seed= 1),
+      elp("define small change",                     cohen= [0.2, 0.1,0.3,0.5]),
+      elp("input data svs file",                     data= "../data/auto.csv"),
+      elp("trace all calls",                         verbose= False),
+      elp("decimals to display floats",              decimals= 3),
+      elp("run unit tests",                          tests= False)
   ],["top-down clustering",
-      elp("min bin size = max(few, N^power)",               few=10),
-      elp("min bin size = max(few, N^power)",               power=0.5),
-      elp("enable heuristic comination",                    speed=False),
-      elp("for speed mode, min distance to trigger retries",trivial=0.05)
+      elp("min bin size = max(few, N^power)",        few= 10),
+      elp("min bin size = max(few, N^power)",        power= 0.5),
+      elp("enable heuristic comination",             speed= False),
+      elp("in speed mode, min distance for retries", trivial= 0.05)
   ],["bottom-up pruning",
-      elp("doubt reduction must be larger than x*unboubt",  undoubt=0.05)
+      elp("doubt reduction must be over x*unboubt",  undoubt= 0.05)
   ],["rule generation",
-      elp("min supprot for acceptable rules",               least=20),
-      elp("build rules from top 'elite' number of ranges",  elite=10)
+      elp("min supprot for acceptable rules",        least= 20),
+      elp("build rules from top 'elite' ranges",     elite= 10)
   ]]
 
 # command-line opionts
@@ -488,12 +489,16 @@ def FASTDOM():
   print()
   for row in t.rows[-10:]: print(">", row.y, row.dom)
 
+class Range(object):
+  def __init__(i, col, name, rows, lo, hi=None):
+    if hi == None: hi = lo
+    i.col,i.name,i.rows,i.lo,i.hi = col,name,rows,lo,hi
+  
 @demo
 def SPLITS(file=THE.data):
   t = table(file)
   val = t.splits()
   lst = sorted(val.values(), key=lambda z: z.mu, reverse=True)
-  #for x in lst: print(x.key, x, len(x.rows))
   out = []
   print("lst ",lst[0].key, len(lst[0].rows))
   print(t.x.head)
@@ -614,5 +619,4 @@ def GROW2():
   _grow(X=xx, N=256)
 
 if __name__ == '__main__':
-  demo(act=THE.main)
-
+  demo() if THE.tests else demo(act=THE.main)
