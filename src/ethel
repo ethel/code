@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import argparse ,getopt, math ,os , re, sys, time, traceback
-from random import random as r, choice as any, seed as seed
-from colorama import Fore, Style
+from random import random as r, choice as any, seed as ranseed
 from contextlib import contextmanager
 
 def help(): return [
@@ -72,7 +71,6 @@ def elp(h, **d):
 
 def options(before, after, *lst):
   parser = argparse.ArgumentParser(epilog=after, description = before, 
-          fromfile_prefix_chars='@',
                                    add_help=False,
               formatter_class = argparse.RawDescriptionHelpFormatter)
   seen=["h"]
@@ -91,9 +89,12 @@ def options(before, after, *lst):
   return parser.parse_args()
 
 THE = options(*help())
+ranseed(THE.seed)
 
 ##################################
 # Standard Library Functions
+def rseed(seed=THE.seed):
+  ranseed(seed)
 
 PASS = FAIL = 0
 
@@ -106,6 +107,7 @@ def demo(f=None, act=None, all=[]):
     if fun.__doc__:
       print("# " + re.sub(r'\n[ \t]*', "\n# ", fun.__doc__))
     try:
+      rseed()
       fun()
       PASS = PASS+1
     except Exception as e:
@@ -179,8 +181,8 @@ class Highlight:
 def plain(s): print(s, end="")
 
 def red(s):
-  with Highlight(Fore, Fore.RED):
-    print(s, end="")
+  print(s,end="")
+  #with Highlight(Fore, Fore.RED): print(s, end="")
 
 def the(b4):
   # Tool for creating our global 'THE'
@@ -196,13 +198,13 @@ def kv(d, keys=None):
   def pretty(x): return round(x, THE.decimals) if isinstance(x, float) else x
   return '{' + ', '.join(['%s: %s' % (k, pretty(d[k]))for k in keys]) + '}'
 
-def rows(file, doomed=r'([\n\r\t]|#.*)', sep=",", skip="?"):
+def rows(file, doomed=r'([\n\r\t ]|#.*)', sep=",", skip="?"):
   # ascii file to rows of cells
   use = None
   with open(file) as fs:
     for n, line in enumerate(fs):
       line = re.sub(doomed, "", line)
-      cells = [z.strip() for z in line.split(sep)]
+      cells = line.split(sep)
       if len(cells) > 0:
         use = use or [n for n, x in enumerate(cells) if x[0] != skip]
         assert len(cells) == len(use), 'row %s lacks %s cells' % (n, len(use))
@@ -310,6 +312,14 @@ class Num(Thing):
   def __repr__(i):
     return 'Num' + kv(dict(lo=i.lo, hi=i.hi, mu=i.mu, sd=i.sd(), n=i.n))
 
+@demo
+def NUM():
+  "Testing numeric calcs"
+  n = Num([12, 15, 67, 34, 56, 12, 98, 60, 24])
+  assert 29.996 == round(n.sd(),3)
+  assert 9      == n.n
+  assert 42     == n.mu
+  
 class Sym(Thing):
   def locals(i): i.seen, i._ent = {}, None
   def doubt(i): return i.ent()
@@ -326,6 +336,13 @@ class Sym(Thing):
   def __repr__(i):
     return 'Sym' + kv(dict(seen=i.seen, ent=i.ent(), n=i.n))
 
+@demo
+def SYM():
+  "Testing symbol calcs"
+  s = Sym('timmenzies')
+  assert 10 == s.n
+  assert 2.722 == round(s.ent(),3)
+ 
 def globs():
     for k,v in globals().items():
         if callable(v):
@@ -417,7 +434,6 @@ def fastdom(t, few=20, power=0.5, trivial=0.05):
   "O(Nlog(N)) approximate dom"
   z   = 10**-32
   few = max(few, len(t.rows)**power)
-
   def dist(i, j):
     d,n = 0,z
     for a,b,lo,hi in zip(i.y, j.y, t.y.lo, t.y.hi):
@@ -426,16 +442,14 @@ def fastdom(t, few=20, power=0.5, trivial=0.05):
       d += (a-b)**2
       n += 1
     return d**0.5/n**0.5
-
   def furthest(i, lst):
     return sorted([(dist(i,j),j) for j in lst])[-1][1]
-
   def div(lst, rank, worst=None, excellent=None):
     if len(lst) > few:
       worst     = worst     or furthest(any(lst),  lst)
       excellent = excellent or furthest(worst, lst)
       if worst.dominates(excellent, t.y.weights, t.y.lo, t.y.hi):
-        return div(lst,  rank, excellent, worst)
+        return div(lst, rank, excellent, worst)
       c   = dist(worst,excellent)
       tmp = []
       for row in lst:
@@ -449,14 +463,14 @@ def fastdom(t, few=20, power=0.5, trivial=0.05):
         tmp += [(x,row)]
       tmp = [pair[1] for pair in sorted(tmp)]
       mid = len(lst)//2
-      rank = div(lst[:mid],rank) 
+      rank= div(lst[:mid], rank) 
       rank= div(lst[mid:], rank)
     else:
       rank += len(lst)
       for one in lst: 
         one.dom = rank
     return rank
-
+  #-- main
   return div(t.rows,0)
 
 def table(file):
@@ -480,9 +494,7 @@ def DOM():
 
 @demo
 def FASTDOM():
-  seed(1)
   t = table(THE.data)
-  t.doms()
   fastdom(t,THE.few, THE.power, THE.trivial)
   t.rows = sorted(t.rows)
   for row in t.rows[:10]: print("<", row.y, row.dom)
@@ -583,7 +595,6 @@ def _grow(X=same, Y=same, N=10000):
     return 0
 
   def show(z): return [X(z), flats(z)]
-  seed(1)
   print("\n--------------------------")
   tree = grow([show(int(100 * r())) for _ in range(N)],
               x=first,
