@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
-import argparse ,getopt, math ,os , re, sys, time, traceback
-from random import random as r, choice as any, seed as ranseed
+import argparse, getopt, math ,os , re, sys, time, traceback
+from random     import random as r, choice as any, seed as ranseed
 from contextlib import contextmanager
 
 def help(): return [
-"""
-ETHEL v0.1.0 multi-objective rule generator
-(c) 2018: Tim Menzies timm@ieee.org, MIT license, v2
-""",
+"""ETHEL v0.1.0 multi-objective rule generator
+(c) 2018: Tim Menzies timm@ieee.org, MIT license, v2""",
 """
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -31,13 +29,14 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """,
   ["general",
-      elp("start up action",                         main= "FORMO"),
+      elp("start up action",                         main= ""),
       elp("random number seed",                      seed= 1),
       elp("define small change",                     cohen= [0.2, 0.1,0.3,0.5]),
       elp("input data svs file",                     data= "../data/auto.csv"),
       elp("trace all calls",                         verbose= False),
       elp("decimals to display floats",              decimals= 3),
-      elp("run unit tests",                          tests= False)
+      elp("list unit tests",                         tests= False),
+      elp("run unit tests",                          check= False)
   ],["top-down clustering",
       elp("min bin size = max(few, N^power)",        few= 10),
       elp("min bin size = max(few, N^power)",        power= 0.5),
@@ -98,14 +97,14 @@ def rseed(seed=THE.seed):
 
 PASS = FAIL = 0
 
-def demo(f=None, act=None, all=[]):
+def demo(f=None, act=None, show=None, all=[]):
   # Define functions we can call from command-line
+  display = lambda f: re.sub(r'\n[ \t]*', "\n# ", f.__doc__ or "")
   def try1(fun):
     global PASS
     global FAIL
     print("\n-----| %s |-----------------------" % fun.__name__)
-    if fun.__doc__:
-      print("# " + re.sub(r'\n[ \t]*', "\n# ", fun.__doc__))
+    if fun.__doc__: print("# " + display(fun))
     try:
       rseed()
       fun()
@@ -115,6 +114,9 @@ def demo(f=None, act=None, all=[]):
       print(traceback.format_exc())
   if f:
     all += [f]
+  elif show:
+    for fun in all:
+        print("%12s : %s" % (fun.__name__, display(fun)))
   elif act:
     for fun in all:
       if fun.__name__ == act:
@@ -146,6 +148,11 @@ def subsets(lst):
     lst1 = []
   return subsets
 
+@demo
+def SUBSETS():
+  "Can we find enough subsets of 4 things?"
+  assert len(subsets('1234')) == 16
+
 def timeit(f):
   t1 = time.perf_counter()
   f()
@@ -163,41 +170,69 @@ class o(object):
   def _has(i): return [k for k in sorted(i.__dict__.keys()) if k[0] != "_"]
   def keys(i): return i.__dict__.keys()
 
-# Coloring
-
-class Highlight:
-  def __init__(i, clazz, color):
-    i.color = color
-    i.clazz = clazz
-  def __enter__(i): print(i.color, end="")
-  def __exit__(i, type, value, traceback):
-    if i.clazz == Fore:
-      print(Fore.RESET, end="")
-    else:
-      assert i.clazz == Style
-      print(Style.RESET_ALL, end="")
-    sys.stdout.flush()
-
-def plain(s): print(s, end="")
-
-def red(s):
-  print(s,end="")
-  #with Highlight(Fore, Fore.RED): print(s, end="")
-
-def the(b4):
-  # Tool for creating our global 'THE'
-  now = o()
-  options = lambda x: x if isinstance(x, list) else [x]
-  for k in b4["what"].keys():
-    now[k] = options(b4["what"][k]["what"])[0]
-  return now
+@demo
+def OBJECT():
+  "do we have something like a JS object?"
+  x = o(name='alan', age=58)
+  x["name"] = 'bill'
+  assert x.name == 'bill'
+  x.name = "clara"
+  assert x.name == "clara"
+  assert len(x) == 2
+  x.age += 10
+  x.age -= 1
+  assert x.age == 67
 
 def kv(d, keys=None):
   # print dictionary, in key sort order
   keys = keys or sorted(list(d.keys()))
-  def pretty(x): return round(x, THE.decimals) if isinstance(x, float) else x
+  def pretty(x): 
+    if callable(x):
+      return x.__doc__
+    else:
+      return round(x, THE.decimals) if isinstance(x, float) else x
   return '{' + ', '.join(['%s: %s' % (k, pretty(d[k]))for k in keys]) + '}'
 
+#-----------------------------
+# tree routines
+
+class Node(object):
+  def __init__(i, left=None,right=None,_up=None):
+    i.left, i.right, i._up = left, right, _up
+
+def tree(t):
+  if t:
+    yield t
+    for u in tree(t.left):  yield u
+    for v in tree(t.right): yield v
+
+def supertree(t):
+  if t:
+    yield t
+    for u in supertree(t._up): yield u
+
+def subtree(t):
+  if t:
+    for u in subtree(t.left):  yield u
+    for v in subtree(t.right): yield v
+    yield t
+
+def leaves(t):
+  for u in subtree(t):
+    if not u.left and not u.right: yield u
+
+def showt(t, tab="|.. ", pre="", lvl=0, val=lambda z: ""):
+  if t:
+    if lvl == 0:
+      print("")
+    val(t)
+    print(' ' + tab * lvl + pre)
+    if t.left:
+      showt(t.left, tab, "< ", lvl + 1, val)
+    if t.right:
+      showt(t.right, tab, "> ", lvl + 1, val)
+
+#-----------------------------
 def rows(file, doomed=r'([\n\r\t ]|#.*)', sep=",", skip="?"):
   # ascii file to rows of cells
   use = None
@@ -230,56 +265,14 @@ def xy(src, rules=['<', '>']):
     yield [row[x] for x in xs], [row[y] for y in ys]
 
 @demo
-def CSV():
-  for n, r in enumerate(data(rows(THE.data))):
+def XY():
+  "demo xy import"
+  for n, r in enumerate(xy(data(rows(THE.data)))):
     if n < 10:
       print(r)
 
-#-----------------------------
-
-class Node(object):
-  def __init__(i,left=None,right=None,_up=None):
-    i.left, i.right, i._up = left, right, _up
-
-def tree(t):
-  if t:
-    yield t
-    for u in tree(t.left):
-      yield u
-    for v in tree(t.right):
-      yield v
-
-def supertree(t):
-  if t:
-    yield t
-    for u in supertree(t._up):
-      yield u
-
-def subtree(t):
-  if t:
-    for u in subtree(t.left):
-      yield u
-    for v in subtree(t.right):
-      yield v
-    yield t
-
-def leaves(t):
-  for u in subtree(t):
-    if not u.left and not u.right:
-      yield u
-
-def showt(t, tab="|.. ", pre="", lvl=0, val=lambda z: ""):
-  if t:
-    if lvl == 0:
-      print("")
-    val(t)
-    print(' ' + tab * lvl + pre)
-    if t.left:
-      showt(t.left, tab, "< ", lvl + 1, val)
-    if t.right:
-      showt(t.right, tab, "> ", lvl + 1, val)
-
 #--------------------------------------
+# Things are either Nums or Syms
 
 class Thing(o):
   def __init__(i, inits=[], f=lambda z: z):
@@ -347,11 +340,6 @@ def globs():
     for k,v in globals().items():
         if callable(v):
             print(type(v),k,v)
-
-@demo
-def FORMO(): 
-  "Simple start up"
-  print(help()[0])
 
 # -------------
 
@@ -485,6 +473,7 @@ def table(file):
 
 @demo
 def DOM():
+  "demo multi-objective domination"
   t = table(THE.data)
   t.doms()
   t.rows = sorted(t.rows)
@@ -494,6 +483,7 @@ def DOM():
 
 @demo
 def FASTDOM():
+  "demo multi-objective domination using an O(N) method"
   t = table(THE.data)
   fastdom(t,THE.few, THE.power, THE.trivial)
   t.rows = sorted(t.rows)
@@ -508,6 +498,7 @@ class Range(object):
   
 @demo
 def SPLITS(file=THE.data):
+  "show the trees"
   t = table(file)
   val = t.splits()
   lst = sorted(val.values(), key=lambda z: z.mu, reverse=True)
@@ -583,10 +574,19 @@ def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
   return recurse(up=root)
 
 def showNode(z):
-  f = plain if z.simpler else red
-  f('%s y=%6.3g sd=%6.3g  when %6.3g <= x <= %6.3g [%5s]' % (
+  print('%s y=%6.3g sd=%6.3g  when %6.3g <= x <= %6.3g [%5s]' % (
     "\u2714" if z.simpler else "\u2717",
     z.y.mu, z.y.sd(), z.x.lo, z.x.hi, z.y.n))
+
+def prune(t):
+  for u in subtree(t):
+    if u.left and u.right:
+      if u.y.simpler(u.left.y, u.right.y, THE.undoubt):
+        for v in supertree(u.left):
+          v.simpler = True
+        for w in supertree(u.right):
+          w.simpler = True
+  return t
 
 def _grow(X=same, Y=same, N=10000):
   def flats(y):
@@ -604,15 +604,6 @@ def _grow(X=same, Y=same, N=10000):
   print([u.x.lo for u in leaves(tree) if u.simpler])
   return tree
 
-def prune(t):
-  for u in subtree(t):
-    if u.left and u.right:
-      if u.y.simpler(u.left.y, u.right.y, THE.undoubt):
-        for v in supertree(u.left):
-          v.simpler = True
-        for w in supertree(u.right):
-          w.simpler = True
-  return t
 
 @demo
 def GROW0(): _grow(N=4096)
@@ -629,5 +620,15 @@ def GROW2():
     return 70
   _grow(X=xx, N=256)
 
+def HELLO(): 
+  "Simple start up"
+  print(help()[0])
+
+
 if __name__ == '__main__':
-  demo() if THE.tests else demo(act=THE.main)
+  if THE.tests:
+    demo(show=True)
+  elif THE.main:
+    demo(act=THE.main)
+  else:
+    demo() if THE.check else HELLO()
