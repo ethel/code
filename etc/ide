@@ -6,7 +6,7 @@ Here=$(PWD)
 if [ -z "$me" ]; then
   PS1=":$PS1"
   PROMPT=":$PROMPT"
-  me=`basename $PWD`
+  me=ethel
   PATH="$Here:$PATH"
 fi
 
@@ -28,11 +28,16 @@ install() {
     fi
   done
 }
+package() {
+  cd $Here/$me
+  zip -r ../$me.zip *
+  ls -lsat ../$me.zip
+  git add ../$me.zip
+}
 pep8() { 
   ## pep8 FILE.py  : reformat FILE.py to PEP8 standards
   autopep8 --global-config $Here/etc/pep8 --in-place --aggressive --aggressive $1
 }
-
 ed() { 
   ## ed FILE       : Edit a file with my vim bindings.
   vim -u $Here/etc/vimrc $1

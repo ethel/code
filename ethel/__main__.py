@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       elp("start up action",                         main= ""),
       elp("random number seed",                      seed= 1),
       elp("define small change",                     cohen= [0.2, 0.1,0.3,0.5]),
-      elp("input data svs file",                     data= "../data/auto.csv"),
+      elp("input data svs file",                     data= "data/auto.csv"),
       elp("trace all calls",                         verbose= False),
       elp("decimals to display floats",              decimals= 3),
       elp("list unit tests",                         tests= False),
