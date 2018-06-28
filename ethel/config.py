@@ -27,7 +27,7 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """,
   ["general",
-      elp("start up action",                         main= ""),
+      elp("start up action",                         act= ""),
       elp("random number seed",                      seed= 1),
       elp("define small change",                     cohen= [0.2, 0.1,0.3,0.5]),
       elp("input data svs file",                     data= "data/auto.csv"),

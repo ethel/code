@@ -18,11 +18,10 @@ from tables import Table, table
 
 # sdsa
 
-if __name__ == '__main__':   
-  if THE.tests:
-    ok(show=True)
-  elif THE.main:
-    ok(act=THE.main)
-  else:
-    ok() if THE.check else print(help()[0])
+if THE.tests:
+   ok(show=True)
+elif THE.act:
+  ok(act=THE.act)
+else:
+  ok() if THE.check else print(help()[0])
 

@@ -2,7 +2,7 @@
 
 ## Download
 
-Download ethel.zip and the `data` directory. 
+Download `[ethel.zip](https://github.com/ethel/code/raw/master/ethel.zip)`   and the `data` directory. 
 
 Create the following file structure.
 
