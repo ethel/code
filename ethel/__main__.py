@@ -15,8 +15,10 @@ from tables import Table, table
 #  def __init__(i, col, name, rows, lo, hi=None):
 #    if hi == None: hi = lo
 #    i.col,i.name,i.rows,i.lo,i.hi = col,name,rows,lo,hi
-#  
-if __name__ == '__main__':
+
+# sdsa
+
+if __name__ == '__main__':   
   if THE.tests:
     demo(show=True)
   elif THE.main:

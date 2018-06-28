@@ -30,9 +30,9 @@ install() {
 }
 package() {
   cd $Here/$me
-  zip -r ../$me.zip *
-  ls -lsat ../$me.zip
+  zip -ur ../$me.zip * -x "__pycache__/*"
   git add ../$me.zip
+  ls -lsat ../$me.zip
 }
 pep8() { 
   ## pep8 FILE.py  : reformat FILE.py to PEP8 standards
