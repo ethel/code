@@ -1,6 +1,3 @@
-#-----------------------------
-# tree routines
-
 class Node(object):
   def __init__(i, left=None,right=None,_up=None):
     i.left, i.right, i._up = left, right, _up
@@ -31,7 +28,5 @@ def showt(t, tab="|.. ", pre="", lvl=0, val=lambda z: ""):
     if lvl == 0: print("")
     val(t)
     print(' ' + tab * lvl + pre)
-    if t.left:  showt(t.left, tab, "< ", lvl + 1, val)
-    if t.right: showt(t.right, tab, "> ", lvl + 1, val)
-
-
+    showt(t.left,  tab, "< ", lvl + 1, val)
+    showt(t.right, tab, "> ", lvl + 1, val)

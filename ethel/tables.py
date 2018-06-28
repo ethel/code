@@ -1,4 +1,4 @@
-from obj    import o
+from obj    import o,Pretty
 from data   import csv
 from things import Num
 from config import THE
@@ -7,7 +7,14 @@ from tree   import *
 from lib    import *
 from random import choice as any
 
-class Row(o):
+class Range(Pretty):
+  def __init__(i, has=None, lo=None,hi=None, col=None, rows=None,key=None,value=None):
+    i.has, i.lo, i.hi, i.col, i.rows,         i.key, i.value = \
+      has,   lo,   hi,   col,   rows or set(),  key,   value)
+    
+
+ 
+class Row(Pretty):
   id = 0
   def __init__(i, x, y):
     i.x, i.y, i.dom = x, y, 0
@@ -25,7 +32,7 @@ class Row(o):
       s2 -= e**(w * (b - a) / n)
     return s1 / n < s2 / n
 
-class Table:
+class Table(Pretty)
   def __init__(i, decs, objs):
     i.rows = []
     i._dom = False
@@ -133,6 +140,7 @@ def SPLITS(file=THE.data):
   "show the trees"
   t = table(file)
   val = t.splits()
+  return 1
   lst = sorted(val.values(), key=lambda z: z.mu, reverse=True)
   out = []
   print("lst ",lst[0].key, len(lst[0].rows))
