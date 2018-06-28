@@ -53,6 +53,7 @@ hi() {
 
 bye() { 
   ## bye           : Push files back to git.
+  package
   git status
   git commit -am "update" 
   git push
