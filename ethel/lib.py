@@ -15,6 +15,9 @@ def first(l): return l[0]
 def second(l): return l[1]
 def last(l): return l[-1]
 
+def fullLines(lines):
+  return "\n".join([s for s in lines.split("\n") if s])
+
 def subsets(lst):
   if lst is None:
     return None

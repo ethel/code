@@ -1,9 +1,11 @@
-from cli import elp,options
+from cli import option,options
 import random
 
-def help(): return [
-"""ETHEL v0.1.0 multi-objective rule generator
-(c) 2018: Tim Menzies timm@ieee.org, MIT license, v2""",
+THE = options(
+"""
+ETHEL v0.1.0 multi-objective rule generator
+(c) 2018: Tim Menzies timm@ieee.org, BSD 2-Clause License
+""",
 """
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -27,27 +29,25 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """,
   ["general",
-      elp("start up action",                         act= ""),
-      elp("random number seed",                      seed= 1),
-      elp("define small change",                     cohen= [0.2, 0.1,0.3,0.5]),
-      elp("input data svs file",                     data= "data/auto.csv"),
-      elp("trace all calls",                         verbose= False),
-      elp("decimals to display floats",              decimals= 3),
-      elp("list unit tests",                         tests= False),
-      elp("run unit tests",                          check= False)
+      option("start up action",                         act= ""),
+      option("random number seed",                      seed= 1),
+      option("define small change",                     cohen= [0.2, 0.1,0.3,0.5]),
+      option("input data svs file",                     data= "data/auto.csv"),
+      option("trace all calls",                         verbose= False),
+      option("decimals to display floats",              decimals= 3),
+      option("list unit tests",                         tests= False),
+      option("run unit tests",                          check= False)
   ],["top-down clustering",
-      elp("min bin size = max(few, N^power)",        few= 10),
-      elp("min bin size = max(few, N^power)",        power= 0.5),
-      elp("enable heuristic comination",             speed= False),
-      elp("in speed mode, min distance for retries", trivial= 0.05)
+      option("min bin size = max(few, N^power)",        few= 10),
+      option("min bin size = max(few, N^power)",        power= 0.5),
+      option("enable heuristic comination",             speed= False),
+      option("in speed mode, min distance for retries", trivial= 0.05)
   ],["bottom-up pruning",
-      elp("doubt reduction must be over x*unboubt",  undoubt= 1.05)
+      option("doubt reduction must be over x*unboubt",  undoubt= 1.05)
   ],["rule generation",
-      elp("min supprot for acceptable rules",        least= 20),
-      elp("build rules from top 'elite' ranges",     elite= 10)
-  ]]
+      option("min supprot for acceptable rules",        least= 20),
+      option("build rules from top 'elite' ranges",     elite= 10)
+  ]
+)  
 
-THE = options(*help())
 random.seed(THE.seed)
-
-

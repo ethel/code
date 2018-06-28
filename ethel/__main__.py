@@ -23,5 +23,5 @@ if THE.tests:
 elif THE.act:
   ok(act=THE.act)
 else:
-  ok() if THE.check else print(help()[0])
+  ok() if THE.check else print(fullLines(THE.HELLO))
 

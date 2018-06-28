@@ -1,6 +1,6 @@
 import argparse
 
-def elp(h, **d):
+def option(h, **d):
   def elp1():
     if val is False :
           return dict(help=h, action="store_true")
@@ -34,6 +34,8 @@ def options(before, after, *lst):
       if group[0]=="general":
         sub.add_argument("-h", "--help", action="help", 
                           help="show this help message and exit")
-  return parser.parse_args()
+  tmp=  parser.parse_args()
+  tmp.HELLO, tmp.COPYRIGHT= before, after
+  return tmp
 
 
