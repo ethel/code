@@ -2,7 +2,7 @@ from obj    import o
 from data   import csv
 from things import Num
 from config import THE
-from demos  import demo
+from oks    import ok
 from tree   import *
 from lib    import *
 from random import choice as any
@@ -128,7 +128,7 @@ def showNode(z):
     "\u2714" if z.useful else "\u2717",
     z.y.mu, z.y.sd(), z.x.lo, z.x.hi, z.y.n),end="")
 
-@demo
+@ok
 def SPLITS(file=THE.data):
   "show the trees"
   t = table(file)
@@ -182,13 +182,13 @@ def _grow(X=same, Y=same, N=10000):
   return tree
 
 
-@demo
+@ok
 def GROW0(): _grow(N=4096)
 
-@demo
+@ok
 def GROW1(): _grow(X=lambda x: 0 if x < 40 else x, N=64)
 
-@demo
+@ok
 def GROW2():
   def xx(x):
     if x < 10: return x
@@ -249,7 +249,7 @@ def fastdom(t, few=20, power=0.5, trivial=0.05):
   #-- main
   return div(t.rows,0)
 
-@demo
+@ok
 def DOM():
   "demo multi-objective domination"
   t = table(THE.data)
@@ -259,7 +259,7 @@ def DOM():
   print()
   for row in t.rows[-10:]: print(">", row.y, row.dom)
 
-@demo
+@ok
 def FASTDOM():
   "demo multi-objective domination using an O(N) method"
   t = table(THE.data)

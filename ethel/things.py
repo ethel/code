@@ -1,6 +1,6 @@
 import math
 from config import THE
-from demos import demo
+from oks import ok
 from obj import o
 #--------------------------------------
 # Things are either Nums or Syms
@@ -38,7 +38,7 @@ class Num(Thing):
   def __repr__(i):
     return 'Num' + kv(dict(lo=i.lo, hi=i.hi, mu=i.mu, sd=i.sd(), n=i.n))
 
-@demo
+@ok
 def NUM():
   "Testing numeric calcs"
   n = Num([12, 15, 67, 34, 56, 12, 98, 60, 24])
@@ -62,7 +62,7 @@ class Sym(Thing):
   def __repr__(i):
     return 'Sym' + kv(dict(seen=i.seen, ent=i.ent(), n=i.n))
 
-@demo
+@ok
 def SYM():
   "Testing symbol calcs"
   s = Sym('timmenzies')

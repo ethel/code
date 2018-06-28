@@ -41,7 +41,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       elp("enable heuristic comination",             speed= False),
       elp("in speed mode, min distance for retries", trivial= 0.05)
   ],["bottom-up pruning",
-      elp("doubt reduction must be over x*unboubt",  undoubt= 0.05)
+      elp("doubt reduction must be over x*unboubt",  undoubt= 1.05)
   ],["rule generation",
       elp("min supprot for acceptable rules",        least= 20),
       elp("build rules from top 'elite' ranges",     elite= 10)

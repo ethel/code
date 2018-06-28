@@ -1,5 +1,5 @@
 from lib import *
-from demos import demo
+from oks import ok
 
 # JavaScript Envy
 
@@ -13,7 +13,7 @@ class o(object):
   def _has(i): return [k for k in sorted(i.__dict__.keys()) if k[0] != "_"]
   def keys(i): return i.__dict__.keys()
 
-@demo
+@ok
 def OBJECT():
   "do we have something like a JS object?"
   x = o(name='alan', age=58)

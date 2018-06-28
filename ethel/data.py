@@ -1,5 +1,5 @@
 import re
-from demos import demo
+from oks import ok
 from config import THE
 
 #-----------------------------
@@ -46,7 +46,7 @@ def csv(file):
   for row in xy(data(cols(rows(lines(THE.data))))):
     yield row
 
-@demo
+@ok
 def XY():
   "demo xy import"
   for n, r in enumerate(csv(THE.data)):

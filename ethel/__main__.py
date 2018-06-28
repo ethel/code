@@ -2,7 +2,7 @@
 import os , re, sys, time
 from random import random as r, choice as any
 from contextlib import contextmanager
-from demos import demo
+from oks import ok
 from lib import *
 from config import THE
 from obj import o
@@ -20,9 +20,9 @@ from tables import Table, table
 
 if __name__ == '__main__':   
   if THE.tests:
-    demo(show=True)
+    ok(show=True)
   elif THE.main:
-    demo(act=THE.main)
+    ok(act=THE.main)
   else:
-    demo() if THE.check else print(help()[0])
+    ok() if THE.check else print(help()[0])
 

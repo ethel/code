@@ -3,7 +3,7 @@ from config import THE
 
 PASS=FAIL=0
 
-def demo(f=None, act=None, show=None, all=[]):
+def ok(f=None, act=None, show=None, all=[]):
   # Define functions we can call from command-line
   display = lambda f: re.sub(r'\n[ \t]*', "\n# ", f.__doc__ or "")
   def try1(fun):

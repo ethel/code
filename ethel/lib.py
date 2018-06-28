@@ -1,5 +1,5 @@
 import random
-from demos import demo
+from oks import ok
 from config import THE
 
 ##################################
@@ -27,7 +27,7 @@ def subsets(lst):
     lst1 = []
   return subsets
 
-@demo
+@ok
 def SUBSETS():
   "Can we find enough subsets of 4 things?"
   assert len(subsets('1234')) == 16
