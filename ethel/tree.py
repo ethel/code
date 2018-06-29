@@ -23,6 +23,12 @@ def leaves(t):
   for u in subtree(t):
     if not u.left and not u.right: yield u
 
+def left(t, up=None):
+  return left(t.left,t) if t else up
+
+def right(t, up=None):
+  return right(t.right,t) if t else up
+
 def showt(t, tab="|.. ", pre="", lvl=0, val=lambda z: ""):
   if t:
     if lvl == 0: print("")

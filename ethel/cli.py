@@ -1,3 +1,5 @@
+# command line interface shortcuts
+
 import argparse
 
 def option(h, **d):

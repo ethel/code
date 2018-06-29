@@ -10,9 +10,7 @@ from random import choice as any
 class Range(Pretty):
   def __init__(i, has=None, lo=None,hi=None, col=None, rows=None,key=None,value=None):
     i.has, i.lo, i.hi, i.col, i.rows,         i.key, i.value = \
-      has,   lo,   hi,   col,   rows or set(),  key,   value)
-    
-
+      has,   lo,   hi,   col,   rows or set(),  key,   value
  
 class Row(Pretty):
   id = 0
@@ -32,7 +30,7 @@ class Row(Pretty):
       s2 -= e**(w * (b - a) / n)
     return s1 / n < s2 / n
 
-class Table(Pretty)
+class Table(Pretty):
   def __init__(i, decs, objs):
     i.rows = []
     i._dom = False
@@ -58,21 +56,24 @@ class Table(Pretty)
                         x=lambda r: r.x[n], 
                         y=lambda r: r.dom))
       showt(tree, val=showNode)
+      breaks =[]
       for u in leaves(tree):
         if u.useful:
-          key = (n, u.x.lo)
-          val[key] = u.y
-          u.y.key = key
-    for row in i.rows:
-      for n in i.x.syms:
-        key = (n, row.x[n])
-        tmp = val[key] if key in val else Num()
-        tmp.key = key
-        tmp.rows += [row]
-        tmp + row.dom
-        val[key] = tmp
-    return val
-
+          breaks += [u.x.lo]
+      print(breaks)
+#          key = (n, u.x.lo)
+#          val[key] = u.y
+#          u.y.key = key
+#    for row in i.rows:
+#      for n in i.x.syms:
+#        key = (n, row.x[n])
+#        tmp = val[key] if key in val else Num()
+#        tmp.key = key
+#        tmp.rows += [row]
+#        tmp + row.dom
+#        val[key] = tmp
+#    return val
+#
 def table(file):
   t = None
   for x, y in csv(file):
@@ -90,21 +91,19 @@ def prune(t):
   return t
 
 class DecisionNode(Node):
-  def __init__(i,x,y,level,left=None,right=None,_up=None):
+  def __init__(i,x,y,level,rows,left=None,right=None,_up=None):
     i.x,i.y,i.level = x,y,level
+    i.y.rows = rows
     i.useful = False
     super().__init__(left=left,right=right,_up=_up)
 
 def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
   "returns nil if nothing"
-  def makeNode(lst, lvl=0, up=None):
-    tmp = DecisionNode(x=Num(lst, f=x), y=klass(lst, f=y), level=lvl, _up=up)
-    tmp.y.rows = lst
-    return tmp
+  def node0(lst, lvl=0, up=None):
+    return  DecisionNode(Num(lst, f=x), klass(lst, f=y), lvl, lst, _up=up)
 
-  def X(j): return notNull(x(lst[j]))
-
-  def notNull(x): return -10**32 if x is '?' else x
+  notNull = lambda x: -10**32 if x is '?' else x
+  X       = lambda j: notNull(x(lst[j]))
 
   def mid(lo, hi):
     m = m1 = m2 = int(lo + (hi - lo) / 2)
@@ -114,19 +113,20 @@ def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
     return m
 
   def recurse(lo=0, hi=len(lst), up=None, lvl=0):
-    node = makeNode(lst[lo:hi], lvl=lvl, up=up) if lvl else up
+    node = node0(lst[lo:hi], lvl=lvl, up=up) if lvl else up
     m = mid(lo, hi)
     if hi - m > few:
       if m - lo > few:
         if X(m) - X(lo) > epsilon:
           if X(hi - 1) - X(m) > epsilon:
-            node.left = recurse(lo=lo, hi=m, up=node, lvl=lvl + 1)
+            node.left  = recurse(lo=lo, hi=m, up=node, lvl=lvl + 1)
             node.right = recurse(lo=m, hi=hi, up=node, lvl=lvl + 1)
     return node
-  lst = sorted(lst, key=lambda row: notNull(x(row)))
-  root = makeNode(lst)
+  # --- main -------
+  lst     = sorted(lst, key=lambda row: notNull(x(row)))
+  root    = node0(lst)
   epsilon = epsilon or root.x.sd() * THE.cohen
-  few = max(few or len(lst)**THE.power, THE.few)
+  few     = max(few or len(lst)**THE.power, THE.few)
   print(dict(epsilon=epsilon, few=few))
   return recurse(up=root)
 

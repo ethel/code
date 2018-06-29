@@ -46,7 +46,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
       option("enable heuristic comination",             speed= False),
       option("in speed mode, min distance for retries", trivial= 0.05)
   ],["bottom-up pruning",
-      option("doubt reduction must be over x*unboubt",  undoubt= 1.05)
+      option("doubt reduction must be over x*unboubt",  undoubt= 1.1)
   ],["rule generation",
       option("min supprot for acceptable rules",        least= 20),
       option("build rules from top 'elite' ranges",     elite= 10)
