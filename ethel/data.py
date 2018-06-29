@@ -2,28 +2,30 @@ import re
 from oks import ok
 from config import THE
 
-
-def csv(file):
+def csv(src):
   for x,y in xy(  # seperate line into independent and depednent variables
               data(  # convert (some) strings to floats
                  cols(  # kill cols we are skipping
                     rows(  # kill blanks and comments
-                       lines( # read lines from disk
-                           THE.data))))):
-    yield x,y
+                      src)))): # reading from some source
+    yield x,y 
 
-def lines(file):
+def fromString(txt):
+  for line in txt.splitlines(): yield line
+
+def fromFile(file):
   with open(file) as fs:
     for line in fs:
       yield line
+
+#----------------
 
 def rows(src, doomed=r'([\n\r\t ]|#.*)', sep=","):
   # ascii file to rows of cells
   for line in src:
     line = re.sub(doomed, "", line)
-    cells = line.split(sep)
-    if len(cells) > 0:
-      yield cells
+    if line:
+      yield line.split(sep)
 
 def cols(src, skip="?"):
   use=None
@@ -54,8 +56,29 @@ def xy(src, rules=['<', '>', '!']):
 @ok
 def XY():
   "demo xy import"
-  for n, r in enumerate(csv(THE.data)):
+  for n, r in enumerate(csv(fromFile(THE.data))):
     if n < 10:
       print(r)
 
-
+@ok
+def FROMSTRING():
+  "REad csv data from string"
+  string="""
+    outlook,	$temp,	$humid,	wind,	!play
+    sunny,	85,	85,	FALSE,	no
+    sunny,	80,	90,	TRUE,	no
+    overcast,	83,	86,	FALSE,	yes
+    rainy,	70,	96,	FALSE,	yes
+    rainy,	68,	80,	FALSE,	yes
+    rainy,	65,	70,	TRUE,	no
+    overcast,	64,	65,	TRUE,	yes
+    sunny,	72,	95,	FALSE,	no
+    sunny,	69,	70,	FALSE,	yes
+    rainy,	75,	80,	FALSE,	yes
+    sunny,	75,	70,	TRUE,	yes
+    overcast,	72,	90,	TRUE,	yes
+    overcast,	81,	75,	FALSE,	yes
+    rainy,	71,	91,	TRUE,	no
+    """
+  for x,y in csv(fromString(string)):
+    print(x," ==> ", y)

@@ -29,12 +29,14 @@ install() {
   done
 }
 package() {
+  ## package       : generate a .zip file (for sharing code)
   cd $Here/$me
   zip -ur ../$me.zip * -x "__pycache__/*"
   git add ../$me.zip
   ls -lsat ../$me.zip
 }
 run() {
+  ## run [OPTIONS] : run ethel (for options, try run -h)
   python3 $me $*
 }
 pep8() { 
@@ -61,5 +63,5 @@ bye() {
 
 help() {  
   echo $me; echo; echo 'OPTIONS:'; echo;
-  grep '##' $Here/etc/bashrc | sed 's/^.*# //' | grep -v grep 
+  grep '##' $Here/etc/ide | sed 's/^.*# //' | grep -v grep 
 }

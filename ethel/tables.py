@@ -1,5 +1,5 @@
 from obj    import o,Pretty
-from data   import csv
+from data   import csv, fromFile, fromString
 from things import Num
 from config import THE
 from oks    import ok
@@ -74,9 +74,9 @@ class Table(Pretty):
 #        val[key] = tmp
 #    return val
 #
-def table(file):
+def table(src):
   t = None
-  for x, y in csv(file):
+  for x, y in csv(src):
     if t: t.row(x, y)
     else: t = Table(x, y)
   t.doms()
@@ -138,7 +138,7 @@ def showNode(z):
 @ok
 def SPLITS(file=THE.data):
   "show the trees"
-  t = table(file)
+  t = table(fromFile(file))
   val = t.splits()
   return 1
   lst = sorted(val.values(), key=lambda z: z.mu, reverse=True)
@@ -260,7 +260,7 @@ def fastdom(t, few=20, power=0.5, trivial=0.05):
 @ok
 def DOM():
   "demo multi-objective domination"
-  t = table(THE.data)
+  t = table(fromFile(THE.data))
   t.doms()
   t.rows = sorted(t.rows)
   for row in t.rows[:10]: print("<", row.y, row.dom)
@@ -270,7 +270,7 @@ def DOM():
 @ok
 def FASTDOM():
   "demo multi-objective domination using an O(N) method"
-  t = table(THE.data)
+  t = table(fromFile(THE.data))
   fastdom(t,THE.few, THE.power, THE.trivial)
   t.rows = sorted(t.rows)
   for row in t.rows[:10]: print("<", row.y, row.dom)
