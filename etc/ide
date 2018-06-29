@@ -37,7 +37,7 @@ package() {
 }
 run() {
   ## run [OPTIONS] : run ethel (for options, try run -h)
-  python3 $me $*
+  python3 $Here/$me $*
 }
 pep8() { 
   ## pep8 FILE.py  : reformat FILE.py to PEP8 standards

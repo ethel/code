@@ -6,12 +6,8 @@ from oks    import ok
 from tree   import *
 from lib    import *
 from random import choice as any
+from range  import NumRange,SymRange
 
-class Range(Pretty):
-  def __init__(i, has=None, lo=None,hi=None, col=None, rows=None,key=None,value=None):
-    i.has, i.lo, i.hi, i.col, i.rows,         i.key, i.value = \
-      has,   lo,   hi,   col,   rows or set(),  key,   value
- 
 class Row(Pretty):
   id = 0
   def __init__(i, x, y):
@@ -34,15 +30,16 @@ class Table(Pretty):
   def __init__(i, decs, objs):
     i.rows = []
     i._dom = False
+    print(decs,objs)
     i.x = o(head=decs,
             nums= [n for n, x in enumerate(decs) if x[0] == '$'],
             syms= [n for n, x in enumerate(decs) if x[0] != '$'])
     i.y = o(head=objs,
             weights= [1 if x[0] == ">" else -1 for x in objs],
-            nums=    [Num() for _ in objs])
+            stats =    [Num() for _ in objs])
   def row(i, decs, objs):
     i.rows += [Row(decs, objs)]
-    [ num + x for num,x in zip(i.y.nums, objs) ]
+    [ num + x for num,x in zip(i.y.stats, objs) ]
   def doms(i):
     if not i._dom:
       i._dom = True
@@ -50,29 +47,25 @@ class Table(Pretty):
     return i
   def splits(i):
     i.doms()
-    val = {}
-    for n in i.x.nums:
+    ranges=[]
+    for pos,n in enumerate(i.x.nums):
       tree = prune(grow(i.rows, 
                         x=lambda r: r.x[n], 
                         y=lambda r: r.dom))
-      showt(tree, val=showNode)
-      breaks =[]
-      for u in leaves(tree):
-        if u.useful:
-          breaks += [u.x.lo]
-      print(breaks)
-#          key = (n, u.x.lo)
-#          val[key] = u.y
-#          u.y.key = key
-#    for row in i.rows:
-#      for n in i.x.syms:
-#        key = (n, row.x[n])
-#        tmp = val[key] if key in val else Num()
-#        tmp.key = key
-#        tmp.rows += [row]
-#        tmp + row.dom
-#        val[key] = tmp
-#    return val
+      #showt(tree, val=showNode)
+      ranges += [NumRange(lo=u.x.lo, hi=u.x.hi, col=pos, rows=u.rows, head=i.x.head[n]) 
+                 for u in leaves(tree) if u.useful]
+    for pos,n in enumerate(i.x.syms):
+      seen = {}
+      print(n)
+      for row in i.rows:
+         key = row.x[n]
+         if key not in seen:
+            seen[key] = range1 = SymRange(has=key,col=n, head=i.x.head[n])
+            ranges += [range1]
+         seen[key] + row
+    print(ranges)
+    print(i.x)
 #
 def table(src):
   t = None
@@ -93,7 +86,7 @@ def prune(t):
 class DecisionNode(Node):
   def __init__(i,x,y,level,rows,left=None,right=None,_up=None):
     i.x,i.y,i.level = x,y,level
-    i.y.rows = rows
+    i.rows = rows
     i.useful = False
     super().__init__(left=left,right=right,_up=_up)
 
@@ -210,7 +203,7 @@ def slowdom(t):
   print("SLOWDOM")
   for row1 in t.rows:
     for row2 in t.rows:
-      if row1.dominates(row2, t.y.weights, t.y.nums):
+      if row1.dominates(row2, t.y.weights, t.y.stats):
         row1.dom += 1
 
 def fastdom(t, few=20, power=0.5, trivial=0.05):
@@ -220,7 +213,7 @@ def fastdom(t, few=20, power=0.5, trivial=0.05):
   few = max(few, len(t.rows)**power)
   def dist(i, j):
     d,n = 0,z
-    for a,b,num in zip(i.y, j.y, t.y.nums):
+    for a,b,num in zip(i.y, j.y, t.y.stats):
       a  = (a - num.lo) / (num.hi - num.lo + z)
       b  = (b - num.lo) / (num.hi - num.lo + z)
       d += (a-b)**2
@@ -232,7 +225,7 @@ def fastdom(t, few=20, power=0.5, trivial=0.05):
     if len(lst) > few:
       if worst     == None: worst     = furthest(any(lst),  lst)
       if excellent == None: excellent = furthest(worst, lst)
-      if worst.dominates(excellent, t.y.weights, t.y.nums):
+      if worst.dominates(excellent, t.y.weights, t.y.stats):
         return div(lst, rank, excellent, worst)
       c   = dist(worst,excellent)
       tmp = []
