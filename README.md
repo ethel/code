@@ -82,8 +82,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 # Authors
 
-<img src="etc/img/timm.jpg" align=right>
-
+<img src="etc/img/timm.jpg" align=left>
 Tim Menzies   
 http://menzies.us    
 timm@ieee.org
