@@ -4,16 +4,17 @@ from oks import ok
 # JavaScript Envy
 
 class Pretty(object):
-  def __repr__(i): return i.__class__.__name__ + kv(i.__dict__, i._has())
-  def _has(i)    : return [k for k in sorted(i.__dict__.keys()) if k[0] != "_"]
-  def keys(i)    : return i.__dict__.keys()
+  "pretty print"
+  def __repr__(i) : return i.__class__.__name__ + kv(i.__dict__, i._has())
+  def _has(i)     : return [k for k in sorted(i.__dict__.keys()) if k[0] != "_"]
+  def keys(i)     : return i.__dict__.keys()
 
 class o(Pretty):
   # Javascript envy. Now 'o' is like a JS object.
-  def __init__(i, **kv): i.__dict__.update(kv)
-  def __setitem__(i, k, v): i.__dict__[k] = v
-  def __getitem__(i, k): return i.__dict__[k]
-  def __len__(i): return len(i.__dict__)
+  def __init__(i, **kv)    : i.__dict__.update(kv)
+  def __setitem__(i, k, v) : i.__dict__[k] = v
+  def __getitem__(i, k)    : return i.__dict__[k]
+  def __len__(i)           : return len(i.__dict__)
 
 @ok
 def OBJECT():
