@@ -8,7 +8,6 @@ from obj import o
 class Thing(o):
   def __init__(i, inits=[], f=lambda z: z):
     i.locals()
-    i.rows = []
     i.n, i._f = 0, f
     [i + x for x in inits]
   def __add__(i, x):

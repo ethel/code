@@ -111,7 +111,7 @@ def grow(lst, epsilon=None, few=None, x=same, y=same, klass=Num):
     m = mid(lo, hi)
     if hi - m > few:
       if m - lo > few:
-        if X(m) - X(lo) > epsilon:
+          if X(m) - X(lo) > epsilon:
           if X(hi - 1) - X(m) > epsilon:
             node.left  = recurse(lo=lo, hi=m, up=node, lvl=lvl + 1)
             node.right = recurse(lo=m, hi=hi, up=node, lvl=lvl + 1)

@@ -1,3 +1,3 @@
 - get rid of "any", go back to choice
 - ddont ah a file caled range. call it ranges
-
+- implement a best and rest scheme where score = 1,0

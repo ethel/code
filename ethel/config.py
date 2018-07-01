@@ -48,7 +48,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   ],["bottom-up pruning",
       option("doubt reduction must be over x*unboubt",  undoubt= 1.1)
   ],["rule generation",
-      option("min supprot for acceptable rules",        least= 20),
+      option("min support for acceptable rules",        least= 20),
       option("build rules from top 'elite' ranges",     elite= 10)
   ]
 )  
