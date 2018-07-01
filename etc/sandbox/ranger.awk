@@ -2,6 +2,3 @@
 
 @include "lib.awk" 
 @include "nums.awk"
-@include "tests.awk"
-
-BEGIN { tests() }

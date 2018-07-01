@@ -42,6 +42,7 @@ cat<<EOF>$Var/vimrc
 	colorscheme delek 
 	set hlsearch!
 	nnoremap <F3> :set hlsearch!<CR>
+	set ruler
 EOF
 
 
@@ -66,10 +67,15 @@ done
 if [ -n "$1" ]; then
   if [[ "$1" == "ed" ]]; then
      vim -u $Var/vimrc $2
+  elif [[ "$1" == "hi" ]]; then
+     git pull
+  elif [[ "$1" == "bye" ]]; then
+     git commit -am "commiting"
+     git push
   else
-    f=$1
+    stem=$(basename $1 ".awk")
+    f=$stem.awk
     g="$Var/$f"
-    shift
-    AWKPATH=".gold:./:$AWKPATH" gawk -f $g $@
+    AWKPATH=".gold:./:$AWKPATH" gawk -v MAIN="$stem" -f $g $@
   fi
 fi

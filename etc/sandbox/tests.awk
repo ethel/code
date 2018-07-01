@@ -1,11 +1,23 @@
-function _rogues(  sym) {
+# /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */
+
+function _rogueLocals(  sym, n) {
   for(sym in SYMTAB) 
-    if (sym !~ /^[A-Z][A-Z]/) print("W> rogue local", sym)
+    if (sym !~ /^[A-Z][A-Z]/) 
+      print "W> "++n" rogue local(s) [" sym "]"
+  return n > 0
 }
-function tests(    f) {
+function tests(    f,y,n,err) {
+  y=n=0;
   for(f in FUNCTAB) 
     if (f ~ /^_/) {
-      print "\n# " f;
-      @f()
-  }
+      y++
+      print "\n### " f "\n";
+      if (err = @f())  {
+        n += err
+	print "\n### E >>>>>>>> " f " FAIL!!! " }}
+  print "\n### Tries= "y\
+             " Failures= "n\
+     	   " ( "100*int(0.5+ n/y)" %)" 
 }
+
+BEGIN { tests() }
