@@ -1,0 +1,75 @@
+#!/bin/bash
+
+Var=./.gold
+
+mkdir -p $Var
+
+if [ ! -f .gitignore ]; then
+  echo .gold > .gitignore
+  git add .gitignore
+fi
+
+cat<<EOF>$Var/vimrc
+  set backupdir-=.
+	set backupdir^=~/tmp,/tmp
+	set nocompatible              " required
+	filetype plugin indent on
+	set modelines=3
+	set scrolloff=3
+	set autoindent
+	set hidden "remember ls
+	set wildmenu
+	set wildmode=list:longest
+	set visualbell
+	set ttyfast
+	set backspace=indent,eol,start
+	set laststatus=2
+	set splitbelow
+	set mouse=a
+	set title
+	set number
+	autocmd BufEnter * cd %:p:h
+	set showmatch
+	set matchtime=15
+	set background=light
+	set syntax=on
+	syntax enable
+	set ignorecase
+	set incsearch
+	set smartcase
+	set showmatch
+	set hlsearch
+	colorscheme delek 
+	set hlsearch!
+	nnoremap <F3> :set hlsearch!<CR>
+EOF
+
+
+for f in *.awk; do
+  g="$Var/$f"
+  cat $f | gawk '
+  BEGIN {In=1}
+  gsub(/^\"\"\"/,"") { In =  1 - In }
+                     { pre  = In ? "" : "##" 
+		                   print pre prep($0)
+                     }
+  function prep(txt) {
+    if (txt ~ /^@include/) return txt
+    if (txt ~ /^[ \t]*#/ ) return txt
+    txt = gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, "[\"\\1\\2\"]", "g", txt)
+    gsub(/__/,".",txt)
+    return txt
+   }
+  ' $f > $g
+done
+
+if [ -n "$1" ]; then
+  if [[ "$1" == "ed" ]]; then
+     vim -u $Var/vimrc $2
+  else
+    f=$1
+    g="$Var/$f"
+    shift
+    AWKPATH=".gold:./:$AWKPATH" gawk -f $g $@
+  fi
+fi
