@@ -4,9 +4,9 @@ Here=$(PWD)
 
 
 if [ -z "$me" ]; then
-  PS1=":$PS1"
-  PROMPT=":$PROMPT"
   me=ethel
+  PS1="$me:$PS1"
+  PROMPT=":$PROMPT"
   PATH="$Here:$PATH"
 fi
 
@@ -30,10 +30,9 @@ install() {
 }
 package() {
   ## package       : generate a .zip file (for sharing code)
-  cd $Here/$me
+  (cd $Here/$me
   zip -ur ../$me.zip * -x "__pycache__/*"
-  git add ../$me.zip
-  ls -lsat ../$me.zip
+  git add ../$me.zip)
 }
 run() {
   ## run [OPTIONS] : run ethel (for options, try run -h)

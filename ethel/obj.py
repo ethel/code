@@ -1,6 +1,7 @@
 from lib import *
 from oks import ok
 
+
 # JavaScript Envy
 
 class Pretty(object):
