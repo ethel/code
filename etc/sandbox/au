@@ -10,7 +10,7 @@ if [ ! -f .gitignore ]; then
 fi
 
 cat<<EOF>$Var/vimrc
-  set backupdir-=.
+        set backupdir-=.
 	set backupdir^=~/tmp,/tmp
 	set nocompatible              " required
 	filetype plugin indent on
@@ -45,35 +45,77 @@ cat<<EOF>$Var/vimrc
 	set ruler
 EOF
 
+prep() {
+  for f in *.awk; do
+    g="$Var/$f"
+    if [ "$f" -nt "$g" ]; then
+      echo "# au $f ==> $g"  >&2
+      cat $f | gawk '
+      BEGIN {In=1}
+      gsub(/^\"\"\"/,"") { In =  1 - In }
+                         { pre  = In ? "" : "##" 
+    		                   print pre prep($0)
+                         }
+      function prep(txt) {
+        if (txt ~ /^@include/) return txt
+        if (txt ~ /^[ \t]*#/ ) return txt
+	if (txt ~ /function has/) return txt
+        txt = gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, "[\"\\1\\2\"]", "g", txt)
+        gsub(/__/,".",txt)
+        return txt
+       }
+      ' $f > $g
+    fi
+  done
+}
+hello() {
+  cat<<-"EOF"	
+	au is GOLD = the gawk object layer 
+	v1.0 (c) 2018, Tim Menzies, BSD 2-clause license
+	EOF
+}
+help() {
+  hello
+  cat<<-"EOF"
 
-for f in *.awk; do
-  g="$Var/$f"
-  cat $f | gawk '
-  BEGIN {In=1}
-  gsub(/^\"\"\"/,"") { In =  1 - In }
-                     { pre  = In ? "" : "##" 
-		                   print pre prep($0)
-                     }
-  function prep(txt) {
-    if (txt ~ /^@include/) return txt
-    if (txt ~ /^[ \t]*#/ ) return txt
-    txt = gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, "[\"\\1\\2\"]", "g", txt)
-    gsub(/__/,".",txt)
-    return txt
-   }
-  ' $f > $g
-done
+	                        88          88  
+	                        88          88  
+	                        88          88  
+	 ,adPPYb,d8  ,adPPYba,  88  ,adPPYb,88  
+	a8"    `Y88 a8"     "8a 88 a8"    `Y88  
+	8b       88 8b       d8 88 8b       88  
+	"8a,   ,d88 "8a,   ,a8" 88 "8a,   ,d88  
+	 `"YbbdP"Y8  `"YbbdP"'  88  `"8bbdP"Y8  
+	         88                             
+	 aa,     88                             
+	  "Y8bbdP"                              
 
-if [ -n "$1" ]; then
-  if [[ "$1" == "ed" ]]; then
-     vim -u $Var/vimrc $2
-  elif [[ "$1" == "hi" ]]; then
-     git pull
-  elif [[ "$1" == "bye" ]]; then
+	./au FILE       	run FILE.awk
+	./au FILE -f tests.awk 	load FILE.awk, then run the tests
+	./au ed FILE		edit FILE 
+	./au zap 		delete preped files (forces recompile)
+	./au hi			get from git
+	./au bye		send back to git
+	./au help		show help
+	EOF
+}
+
+if [ -z "$1" ]; then
+  hello; echo
+  echo "Type './au help' for a list of options"
+  prep
+else
+  if   [[ "$1" == "ed" ]];   then vim -u $Var/vimrc $2
+  elif [[ "$1" == "zap" ]];  then rm $Var/*.awk
+  elif [[ "$1" == "hi" ]];   then git pull
+  elif [[ "$1" == "help" ]]; then help
+  elif [[ "$1" == "bye" ]];  then
      git commit -am "commiting"
      git push
   else
+    prep
     stem=$(basename $1 ".awk")
+    shift
     f=$stem.awk
     g="$Var/$f"
     AWKPATH=".gold:./:$AWKPATH" gawk -v MAIN="$stem" -f $g $@

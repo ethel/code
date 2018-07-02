@@ -8,16 +8,16 @@ function _rogueLocals(  sym, n) {
 }
 function tests(    f,y,n,err) {
   y=n=0;
-  for(f in FUNCTAB) 
+  for(f in FUNCTAB) { 
     if (f ~ /^_/) {
       y++
       print "\n### " f "\n";
       if (err = @f())  {
         n += err
-	print "\n### E >>>>>>>> " f " FAIL!!! " }}
-  print "\n### Tries= "y\
-             " Failures= "n\
-     	   " ( "100*int(0.5+ n/y)" %)" 
+	      print "\n### E >>>>>>>> " f " FAIL!!! " }}}
+  print "\n### Tries= "y,
+        "Failures= "n,
+        "( "100*int(0.5+ n/y)" %)" 
 }
 
-BEGIN { tests() }
+BEGIN { print 1; tests() }
