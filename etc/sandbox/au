@@ -1,5 +1,35 @@
 #!/bin/bash
 
+##########################################################################
+# au is GOLD = the Gawk Object Layer 
+# v0.5 (c) 2018, Tim Menzies, BSD 2-clause license
+# All rights reserved.
+# 
+# Copyright (c) 2018, Tim Menzies
+# All rights reserved.
+# 
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+# 
+# * Redistributions of source code must retain the above copyright notice, this
+#   list of conditions and the following disclaimer.
+# 
+# * Redistributions in binary form must reproduce the above copyright notice,
+#   this list of conditions and the following disclaimer in the documentation
+#   and/or other materials provided with the distribution.
+# 
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+# SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+# CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+# OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+##########################################################################
+
 Var=./.gold
 
 mkdir -p $Var
@@ -60,7 +90,8 @@ prep() {
         if (txt ~ /^@include/) return txt
         if (txt ~ /^[ \t]*#/ ) return txt
 	if (txt ~ /function has/) return txt
-        txt = gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, "[\"\\1\\2\"]", "g", txt)
+        txt = gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, 
+	      "[\"\\1\\2\"]", "g", txt)
         gsub(/__/,".",txt)
         return txt
        }
@@ -70,8 +101,8 @@ prep() {
 }
 hello() {
   cat<<-"EOF"	
-	au is GOLD = the gawk object layer 
-	v1.0 (c) 2018, Tim Menzies, BSD 2-clause license
+	au is GOLD = the Gawk Object Layer 
+	v0.5 (c) 2018, Tim Menzies, BSD 2-clause license
 	EOF
 }
 help() {
@@ -93,10 +124,14 @@ help() {
 	./au FILE       	run FILE.awk
 	./au FILE -f tests.awk 	load FILE.awk, then run the tests
 	./au ed FILE		edit FILE 
-	./au zap 		delete preped files (forces recompile)
+	./au ok 		run all tests
+	./au zap 		delete complied files (forces recompile)
 	./au hi			get from git
 	./au bye		send back to git
 	./au help		show help
+
+	Note that this code cannot load any X.awk file for
+	X in ed, ok, zap, hi, bye, help. 
 	EOF
 }
 
@@ -105,11 +140,13 @@ if [ -z "$1" ]; then
   echo "Type './au help' for a list of options"
   prep
 else
-  if   [[ "$1" == "ed" ]];   then vim -u $Var/vimrc $2
-  elif [[ "$1" == "zap" ]];  then rm $Var/*.awk
-  elif [[ "$1" == "hi" ]];   then git pull
+  if   [[ "$1" == "ed"   ]]; then vim -u $Var/vimrc $2
+  elif [[ "$1" == "zap"  ]]; then rm $Var/*.awk
+  elif [[ "$1" == "hi"   ]]; then git pull
   elif [[ "$1" == "help" ]]; then help
-  elif [[ "$1" == "bye" ]];  then
+  elif [[ "$1" == "ok"   ]]; then bash au tests
+  elif [[ "$1" == "bye"  ]]; then
+     git status
      git commit -am "commiting"
      git push
   else

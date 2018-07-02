@@ -4,6 +4,8 @@
 System Constants
 """
 
+@include "object.awk"
+
 BEGIN {
   INF=10^32;  NINF= -10^32; ZIP=1/INF; 
   PI=3.14159; EE=2.719
