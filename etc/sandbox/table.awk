@@ -1,11 +1,11 @@
 # /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */
 
-@include "lib.awk"
-@include "num.awk"
-@include "sym.awk"
-@include "row.awk"
+@include "lib"
+@include "num"
+@include "sym"
+@include "row"
 
-function Table(i) {
+func Table(i) {
   class(i,"Table")
   have(i,"X","XY")
   have(i,"Y","XY")
@@ -13,31 +13,27 @@ function Table(i) {
   i.n = 0
   i.sep = ","
 }
-function XY(i) {
+func XY(i) {
   class(i,"Part")
-  have(i,"head")
   have(i,"nums")
   have(i,"syms")
-  have(i,"stats")
   have(i,"w")
 } 
-function TableFromFile(i,file,    row,txt) {
-  row=0
-  while((getline txt < file) > 0) {
-    gsub(/[ \t\r]*/, "", txt) # no whitespce:
-    gsub(/#["*"]$/,     "", txt) # no comments
-    if (txt)                  # if anything left
-      if (row) {
-        has(i.rows, ++i.n, "Row")
-        RowFromString(i.rows.n, txt, i) 
-      } else {
-        TableHeader(i,txt)
-        row++
-}}}
+func TableRow(i,values,    j,w,value) {
+  j = length(i.rows) + 1
+  has(i.rows, j, "Row")
+  for(w in i.rw) {
+    value = values[ i.rw[w] ]
+    if (w in i.nums)
+       value = NumInc(i.cols[w], value)
+     else
+       value = SymInc(i.cols[w], value);
+    i.rows[j].raw[w] = value
+}}
 
-function _Table(   t) { 
+func Table_(   t) { 
   Table(t)
   o(t,"t")
 }
 
-BEGIN { if (MAIN == "table") _Table() }
+BEGIN { if(MAIN == "table")   Table_() }

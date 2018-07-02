@@ -1,11 +1,12 @@
 #!/bin/bash
 
-# To control where the generated AWK goes, edit the following line
+# To control where the generated files go, edit the following line
 
 Var="$HOME/opt/gold/lib"
+Doc="$HOME/opt/gold/doc"
 
 hello() { cat<<EOF	
-${red}au is GOLD = the Gawk Object Layer 
+${red}au is GOLD = the Gawk Object Layer Development environment
 v0.5 (c) 2018, Tim Menzies, BSD 2-clause license${white}
 EOF
 }
@@ -39,7 +40,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 EOF
 }
 
-mkdir -p $Var
+mkdir -p $Var $Doc
 
 ltyl=$(tput setaf 11)
 white=$(tput setaf 15)
@@ -47,6 +48,7 @@ red=$(tput setaf 1)
 
 if [ ! -f .gitignore ]; then
   echo $Var > .gitignore
+  echo $Dpc >> .gitignore
   git add .gitignore
 fi
 
@@ -84,6 +86,7 @@ cat<<EOF>$Var/vimrc
 	set hlsearch!
 	nnoremap <F3> :set hlsearch!<CR>
 	set ruler
+	set formatoptions+=cro
 EOF
 
 prep() {
@@ -100,7 +103,6 @@ prep() {
       function prep(txt) {
         if (txt ~ /^@include/) return txt
         if (txt ~ /^[ \t]*#/ ) return txt
-	if (txt ~ /function has/) return txt
         txt = gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, 
 	      "[\"\\1\\2\"]", "g", txt)
         gsub(/__/,".",txt)
@@ -110,22 +112,58 @@ prep() {
     fi
   done
 }
+publish() {
+  for f in *.awk; do
+    g=$(basename $f ".awk")
+    g="$Doc/$g.md"
+    if [ "$f" -nt "$g" ]; then
+      echo "# au $f ==> $g"  >&2
+      cat $f | gawk 'BEGIN {In = 1; Pre=1}
+	gsub(/^"""/,"") {
+	    In =  1 - In
+	    if (Pre)
+	       Pre=0
+	    else {
+	      if (In)  {
+	        print ""
+	        print "```awk " $0
+	      } else {
+	        print "```" $0
+	        print "" } }
+	    next
+	    }
+	Pre { next }
+	    { sub(/^#/,"")
+	      print }
+	END { if (In) print "```\n" }
+      ' $f > $g
+    fi
+  done
+}
+
+banner() { cat <<-"EOF"
+
+	                .-'''-.
+	              '   _    \  .---._______
+	            /   /` '.   \ |   |\  ___ `'.
+	     .--./).   |     \  ' |   | ' |--.\  \
+	    /.''\\ |   '      |  '|   | | |    \  '
+	   | |  | |\    \     / / |   | | |     |  '
+	    \`-' /  `.   ` ..' /  |   | | |     |  |
+	    /("'`      '-...-'`   |   | | |     ' .'
+	    \ '---.               |   | | |___.' /'
+	     /'""'.\              |   |/_______.'/
+	    ||     ||             '---'\_______|/
+	    \'. __//
+	     `'---'                              
+
+EOF
+}
+
 help() {
   hello
+  echo -n $ltyl; banner; echo -n $white
   cat<<-EOF
-	$ltyl
-	                        88          88  
-	                        88          88  
-	                        88          88  
-	 ,adPPYb,d8  ,adPPYba,  88  ,adPPYb,88  
-	a8"    \`Y88 a8"     "8a 88 a8"    \`Y88  
-	8b       88 8b       d8 88 8b       88  
-	"8a,   ,d88 "8a,   ,a8" 88 "8a,   ,d88  
-	 \`"YbbdP"Y8  \`"YbbdP"'  88  \`"8bbdP"Y8  
-	         88                             
-	 aa,     88                             
-	  "Y8bbdP" $white                             
-
 	./au FILE       	run FILE.awk
 	./au FILE -f tests.awk 	load FILE.awk, then run the tests
 	./au ed FILE		edit FILE 
@@ -133,12 +171,19 @@ help() {
 	./au zap 		delete complied files (forces recompile)
 	./au pull		get from git
 	./au push		send back to git
+	./au publish		show license
 	./au license		show license
 	./au help		show help
+ 
+	As a side-effect of running ./au, the directory "$Var"
+	and "$Doc" are updated with current versions of the 
+	runtime code and markdowns generated from the X.awk
+        files in this directory.
 
 	To use the generated awk, add "$Var" to your AWKPATH.
+
 	Note that this code cannot load any X.awk file for
-	X in ed, ok, zap, pull, push, license help. 
+	X in ed, ok, zap, pull, push, publish, license, help. 
 	EOF
 }
 
@@ -148,9 +193,10 @@ if [ -z "$1" ]; then
   prep
 else
   if   [[ "$1" == "ed"      ]]; then vim -u $Var/vimrc $2
-  elif [[ "$1" == "zap"     ]]; then rm $Var/*.awk
+  elif [[ "$1" == "zap"     ]]; then rm $Var/*.awk $Doc/*.md
   elif [[ "$1" == "pull"    ]]; then git pull
   elif [[ "$1" == "help"    ]]; then help
+  elif [[ "$1" == "publish" ]]; then publish
   elif [[ "$1" == "license" ]]; then copyright
   elif [[ "$1" == "ok"      ]]; then bash au tests
   elif [[ "$1" == "push"    ]]; then
