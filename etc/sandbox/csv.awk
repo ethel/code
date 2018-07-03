@@ -20,31 +20,30 @@ func XY(i) {
 }
 
 func CsvFromFile(i,file,        txt,cells, line) {
+  line=0
   sep = sep ? sep : ","
   while((getline txt < file) > 0)  {
      gsub(/[ \t\r]*/, "", txt) # no whitespce:
      gsub(/#["*"]$/,     "", txt) # no comments
      if (txt) {
        split(txt,cells, i.sep)
-       if (!line)  
-         CsvFindColumnGroups(i,cells)
-       line++
-       CsvDivideIntoColumnGroups(i,cells,line) }}
+       if (line=0)  
+         CsvHeader(i,cells)
+       CsvInc(i,cells,++line) }}
   close(file)
 }
-func CsvFindColumnGroups(i,cells,    j,z) {
+func CsvHeader(i,cells,    j,z) {
   for(j in cells) {
     z = cells[j]
     if (z !~ SKIP)  
-      z ~ i.klassp ? col1(i.y,j,z, z~i.nump) : col(i.x,j,z,z~i.nump)
+      z ~ i.klassp ? head1(i.y,j,z, z~i.nump) : head1(i.x,j,z,z~i.nump)
 }}
-func col1(a,j,txt,nump) {
+func head1(a,j,txt,nump) {
   have(a,j, nump ? "Num" : "Sym")
   a[j].txt = txt
   a[j].pos = j
 }
-
-func CsvDivideIntoColumnGroups(i,callback,cells,line,    x,y,z) {
+func CsvRow(i,callback,cells,line,    x,y,z) {
    List(x)
    List(y)
    for(z in i.x)   x[z.pos] = cells[z.pos]
