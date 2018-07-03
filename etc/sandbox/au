@@ -192,21 +192,24 @@ if [ -z "$1" ]; then
   echo "Type './au help' for a list of options"
   prep
 else
-  if   [[ "$1" == "ed"      ]]; then vim -u $Var/vimrc $2
-  elif [[ "$1" == "zap"     ]]; then rm $Var/*.awk $Doc/*.md
-  elif [[ "$1" == "pull"    ]]; then git pull
-  elif [[ "$1" == "help"    ]]; then help
-  elif [[ "$1" == "publish" ]]; then publish
-  elif [[ "$1" == "license" ]]; then copyright
-  elif [[ "$1" == "ok"      ]]; then bash au tests
-  elif [[ "$1" == "push"    ]]; then
+  x=$1
+  shift
+  echo "$*"
+  if   [[ "$x" == "ed"      ]]; then vim -u $Var/vimrc $1
+  elif [[ "$x" == "zap"     ]]; then rm $Var/*.awk $Doc/*.md
+  elif [[ "$x" == "pull"    ]]; then git pull
+  elif [[ "$x" == "help"    ]]; then help
+  elif [[ "$x" == "publish" ]]; then publish
+  elif [[ "$x" == "license" ]]; then copyright
+  elif [[ "$x" == "snip"    ]]; then echo "BEGIN {$*; exit}" > /tmp/$$.awk; gawk -f /tmp/$$.awk
+  elif [[ "$x" == "ok"      ]]; then bash au tests
+  elif [[ "$x" == "push"    ]]; then
      git status
      git commit -am "commiting"
      git push
   else
     prep
-    stem=$(basename $1 ".awk")
-    shift
+    stem=$(basename $x ".awk")
     f=$stem.awk
     g="$Var/$f"
     AWKPATH="$Var:./:$AWKPATH" gawk -v MAIN="$stem" -f $g $@
