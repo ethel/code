@@ -6,10 +6,8 @@ func Csv(i) {
   class(i,"Csv")
   have(i,"nums")
   have(i,"syms")
-  have(i,"xs")
-  have(i,"ys")
-  have(i,"x","XY")
-  have(i,"y","XY")
+  have(i,"x")
+  have(i,"y")
   i.klassp = "[" MORE LESS KLASS "]"
   i.nump   = "[" MORE LESS NUM "]"
   i.sep    = ","
@@ -21,7 +19,7 @@ func XY(i) {
   have(i,"stats") # Num or Sym object
 }
 
-func CsvFromFile(i,file,callback,        txt,cells, line) {
+func CsvFromFile(i,file,        txt,cells, line) {
   sep = sep ? sep : ","
   while((getline txt < file) > 0)  {
      gsub(/[ \t\r]*/, "", txt) # no whitespce:
@@ -31,28 +29,34 @@ func CsvFromFile(i,file,callback,        txt,cells, line) {
        if (!line)  
          CsvFindColumnGroups(i,cells)
        line++
-       CsvDivideIntoColumnGroups(i,callback,cells,line) }}
+       CsvDivideIntoColumnGroups(i,cells,line) }}
   close(file)
 }
-func CsvFindColumnGroups(i,cells,    j,cell) {
+func CsvFindColumnGroups(i,cells,    j,z) {
   for(j in cells) {
-    cell = cells[j]
-    if (cell !~ SKIP) {
-       (cell ~ i.klassp) ? have(i.y,j,"Num")  : have(i.x,j,"Sym")
-       (cell ~ i.nump)   ? i.nums[j] : i.syms[j] }}
+    z = cells[j]
+    if (z !~ SKIP)  
+      z ~ i.klassp ? col1(i.y,j,z, z~i.nump) : col(i.x,j,z,z~i.nump)
+}}
+func col1(a,j,txt,nump) {
+  have(a,j, nump ? "Num" : "Sym")
+  a[j].txt = txt
+  a[j].pos = j
 }
+
 func CsvDivideIntoColumnGroups(i,callback,cells,line,    x,y,z) {
    List(x)
    List(y)
-   for(z in i.xs)   x[z] = cells[z]
-   for(z in i.ys)   y[z] = cells[z] 
+   for(z in i.x)   x[z.pos] = cells[z.pos]
+   for(z in i.ys)   y[z.pos] = cells[z.pos] 
    for(z in nums) cells[z] +=0 # coercion to numbers
+   #XXX make sym num compile string
    @callback(i,x,y,line) 
 }
 
 func CSV_(    c) { 
   Csv(c)
-  CsvFromFile(c,"____/____/data/auto__csv","CSV1") 
+  CsvFromFile(c,"____/____/data/auto__csv") 
 }
 func CSV1(c,x,y,line) {
   print line
