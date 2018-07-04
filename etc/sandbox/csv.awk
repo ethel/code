@@ -40,14 +40,14 @@ func CsvFromFile(i,file,        txt,cells, line) {
   close(file)
 }
 func CsvHeader(i,cells,       j,txt,pos,xy,what) {
-  for(j=1;j<=length(cells);j++) {
+  for(j in cells) {
     txt = cells[j]
     if (txt !~ SKIP) {
       i.use[++pos] = j
       xy = i.xy[pos] = txt ~ i.klassp ? "y"   : "x"
       what  = txt ~ i.nump   ? "Num" : "Sym"
       haVE(i[xy],pos,what,txt,pos)
-      if (txt ~ i.LESS)  i[where][pos].w= -1
+      if (txt ~ i.LESS)  i[xy][pos].w= -1
       if (txt ~ i.KLASS) i.klass=pos }}
 }       
 func CSV_(    c) { 
