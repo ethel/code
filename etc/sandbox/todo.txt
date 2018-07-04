@@ -1,0 +1,1 @@
+check auto.csv has the right stats
