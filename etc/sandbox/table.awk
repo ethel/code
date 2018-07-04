@@ -5,21 +5,21 @@
 @include "sym"
 @include "row"
 
-func Table(i) {
+function Table(i) {
   class(i,"Table")
-  have(i,"X","XY")
-  have(i,"Y","XY")
-  have(i,"rows")
+  holds(i,"X","XY")
+  holds(i,"Y","XY")
+  holds(i,"rows")
   i.n = 0
   i.sep = ","
 }
-func XY(i) {
+function XY(i) {
   class(i,"Part")
-  have(i,"nums")
-  have(i,"syms")
-  have(i,"w")
+  holds(i,"nums")
+  holds(i,"syms")
+  holds(i,"w")
 } 
-func TableRow(i,values,    j,w,value) {
+function TableRow(i,values,    j,w,value) {
   j = length(i.rows) + 1
   has(i.rows, j, "Row")
   for(w in i.rw) {
@@ -31,7 +31,7 @@ func TableRow(i,values,    j,w,value) {
     i.rows[j].raw[w] = value
 }}
 
-func Table_(   t) { 
+function Table_(   t) { 
   Table(t)
   o(t,"t")
 }

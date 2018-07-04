@@ -8,17 +8,17 @@
 
 """
 
-func show(l,pre) { 
+function show(l,pre) { 
   print str(l,pre) 
 }
-func str(l,pre,   txt,x) { 
+function str(l,pre,   txt,x) { 
   if (pre)
      for (x in l) txt= txt pre"["x"]="l[x] " "
   else
      for (x in l) txt= txt x"="l[x] " "
   return txt 
 }
-func o(l,prefix,order,       indent,old,i) {
+function o(l,prefix,order,       indent,old,i) {
   old = PROCINFO["sorted_in"]
   prefix=prefix == "" ? "o " : prefix
   if(! isarray(l)) {

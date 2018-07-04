@@ -6,7 +6,7 @@
 
 @include "lib"
 
-func Sym(i) {
+function Sym(i) {
   class(i,"Syms")
   have(i,"counts")
   i.mode = ""
@@ -14,7 +14,7 @@ func Sym(i) {
   i._ent =""
   i.n = 0
 }
-func SymInc(i,x,   tmp) {
+function SymInc(i,x,   tmp) {
   if( x == SKIP ) return x
   i.n++
   i._ent = ""
@@ -24,21 +24,21 @@ func SymInc(i,x,   tmp) {
     i.mode = x }
   return x
 }
-func SymDec(i,x,   tmp) {
+function SymDec(i,x,   tmp) {
   if( x == SKIP ) return x
   i.n--
   i._ent = ""
   i.counts[x]--
   return x
 }
-func SymEnt(i,   x,p) {
+function SymEnt(i,   x,p) {
   if(!i._ent)
     for(x in i.counts) {
       p = i.counts[x]/i.n
       i._ent -= p * log(p) / log(2) }
   return i._ent
 }
-func SYM() {
+function SYM() {
   "Testing symbol calcs"
   split("timmenzies",a,"")
 

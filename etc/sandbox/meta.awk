@@ -6,6 +6,6 @@
 
 """
 
-func all(f,i,a) { for(j in a) @f(i, a[j]) }
+function all(f,i,a) { for(j in a) @f(i, a[j]) }
 
 

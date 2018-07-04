@@ -3,18 +3,16 @@
 #include everyone
 
 @include "lib"
-@include "num"
-@include "sym"
-@include "table"
+@include "thing"
+@include "csv"
 
-
-func rogueLocals_(  sym, n) {
+function rogueLocals_(  sym, n) {
   for(sym in SYMTAB) 
     if (sym !~ /^[A-Z][A-Z]/) 
       print "W> "++n" rogue local(s) [" sym "]"
   return n > 0
 }
-func tests(    f,try,fail,err) {
+function tests(    f,try,fail,err) {
   for(f in FUNCTAB) { 
     if (f ~ /_$/) {
       try++
@@ -24,7 +22,6 @@ func tests(    f,try,fail,err) {
 	      print "\n### E >>>>>>>>>>>>> " f " FAIL!!! " }}}
   print "\n### Tries=",y,
         "Failures=",n,
-        "("100*int(0.5+ (fail+0)/(try+ZIP)" %)" 
+        "("100*int(0.5+ (fail+0)/(try+ZIP))" %)" 
 }
-
-BEGIN { print 1; tests() }
+BEGIN { tests() }

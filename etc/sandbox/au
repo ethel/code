@@ -10,7 +10,6 @@ ${red}au is GOLD = the Gawk Object Layer Development environment
 v0.5 (c) 2018, Tim Menzies, BSD 2-clause license${white}
 EOF
 }
-
 copyright() { hello; cat <<EOF
 All rights reserved.
 
@@ -39,7 +38,6 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 EOF
 }
-
 mkdir -p $Var $Doc
 
 ltyl=$(tput setaf 11)
@@ -48,7 +46,7 @@ red=$(tput setaf 1)
 
 if [ ! -f .gitignore ]; then
   echo $Var > .gitignore
-  echo $Dpc >> .gitignore
+  echo $Doc >> .gitignore
   git add .gitignore
 fi
 
@@ -89,7 +87,9 @@ cat<<EOF>$Var/vimrc
 	set formatoptions+=cro
 EOF
 
-prep() {
+prep() { prepCode; prepDoc; }
+
+prepCode() {
   for f in *.awk; do
     g="$Var/$f"
     if [ "$f" -nt "$g" ]; then
@@ -116,7 +116,7 @@ prep() {
     fi
   done
 }
-publish() {
+prepDoc() {
   for f in *.awk; do
     g=$(basename $f ".awk")
     g="$Doc/$g.md"
@@ -144,7 +144,6 @@ publish() {
     fi
   done
 }
-
 banner() { cat <<-"EOF"
 
 	                .-'''-.
@@ -163,7 +162,6 @@ banner() { cat <<-"EOF"
 
 EOF
 }
-
 help() {
   hello
   echo -n $ltyl; banner; echo -n $white
@@ -175,22 +173,20 @@ help() {
 	./au zap 		delete complied files (forces recompile)
 	./au pull		get from git
 	./au push		send back to git
-	./au publish		show license
 	./au license		show license
 	./au help		show help
  
 	As a side-effect of running ./au, the directory "$Var"
 	and "$Doc" are updated with current versions of the 
 	runtime code and markdowns generated from the X.awk
-        files in this directory.
+	files in this directory.
 
 	To use the generated awk, add "$Var" to your AWKPATH.
 
 	Note that this code cannot load any X.awk file for
-	X in ed, ok, zap, pull, push, publish, license, help. 
+	X in ed, ok, zap, pull, push, license, help. 
 	EOF
 }
-
 if [ -z "$1" ]; then
   hello; echo
   echo "Type './au help' for a list of options"
@@ -203,7 +199,6 @@ else
   elif [[ "$x" == "zap"     ]]; then rm $Var/*.awk $Doc/*.md
   elif [[ "$x" == "pull"    ]]; then git pull
   elif [[ "$x" == "help"    ]]; then help
-  elif [[ "$x" == "publish" ]]; then publish
   elif [[ "$x" == "license" ]]; then copyright
   elif [[ "$x" == "ok"      ]]; then bash au tests
   elif [[ "$x" == "push"    ]]; then
