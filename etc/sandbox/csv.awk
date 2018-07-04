@@ -58,7 +58,7 @@ function CsvHeader(i,cells,       j,txt,pos,xy,what) {
 function CSV_(    c) { 
   Csv(c)
   CsvFromFile(c,"____/____/data/auto__csv") 
-  #o(c.x)
+  o(c.x)
 }
 
 BEGIN {if (MAIN=="csv") CSV_() }

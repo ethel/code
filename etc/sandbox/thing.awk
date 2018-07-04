@@ -10,12 +10,9 @@ function Thing(i,pos,txt) {
   i.n = 0
   i.w = 1
 }
-function ThingPrep(i,x) { 
-  return x 
-}
 function ThingInc(i,x) {
   if ( x==SKIP) return x
-  x = @Prep(i,x)
+  print "x",x
   i.n++
   @Inc1(i,x)
   return x
@@ -40,7 +37,7 @@ function Sym(i,pos,txt) {
 function SymInc1(i,x,   tmp) {
   i._ent = ""
   tmp = i.counts[x] = i.counts[x] + 1 
-  if(tmp > i.mode) {
+  if(tmp > i.most) {
     i.most = tmp
     i.mode = x }
 }
@@ -65,14 +62,15 @@ function Num(i,pos,txt) {
   if (pos) i.pos=pos
   if (txt) i.txt=txt
 }
-function NumPrep(i,x) { return x+0 }
 
 function NumInc1(i,x,    d) {
+  x    += 0
   d     = x - i.mu
   i.mu += d/i.n
   i.m2 += d*(x - i.mu)
   i.sd  = (i.m2/(i.n - 1 + ZIP))^0.5
   if (x > i.hi) i.hi = x
+  if (i.pos == 3) print x,i.lo, x < i.lo
   if (x < i.lo) i.lo = x
 }      
 function NumDec1(i,x,    d) {  
