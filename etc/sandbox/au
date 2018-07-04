@@ -103,8 +103,12 @@ prep() {
       function prep(txt) {
         if (txt ~ /^@include/) return txt
         if (txt ~ /^[ \t]*#/ ) return txt
-        txt = gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, 
-	      "[\"\\1\\2\"]", "g", txt)
+	txt= gensub(/@([A-Z][^\(]+)\(([^,]+),/,
+	            "polymorphism(\\2,\"\\1\")@METHOD(\\2,",
+		    "g",txt)
+        txt= gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, 
+	            "[\"\\1\\2\"]", 
+	            "g", txt)
         gsub(/__/,".",txt)
         return txt
        }
@@ -201,7 +205,6 @@ else
   elif [[ "$x" == "help"    ]]; then help
   elif [[ "$x" == "publish" ]]; then publish
   elif [[ "$x" == "license" ]]; then copyright
-  elif [[ "$x" == "snip"    ]]; then echo "BEGIN {$*; exit}" > /tmp/$$.awk; gawk -f /tmp/$$.awk
   elif [[ "$x" == "ok"      ]]; then bash au tests
   elif [[ "$x" == "push"    ]]; then
      git status

@@ -4,13 +4,11 @@
 
 @include "lib"
 @include "num"
-@include "object"
-@include "ranger"
-@include "row"
 @include "sym"
 @include "table"
 
-func _rogueLocals(  sym, n) {
+
+func rogueLocals_(  sym, n) {
   for(sym in SYMTAB) 
     if (sym !~ /^[A-Z][A-Z]/) 
       print "W> "++n" rogue local(s) [" sym "]"

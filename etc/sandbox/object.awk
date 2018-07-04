@@ -1,11 +1,12 @@
 # /* vim: set filetype=awk ts=2 sw=2 sts=2 expandtab: */
 
-func List(i) { split("",i,"") }
+func List(i) { split("",i,"") ; return "List" }
 
 func Object(i) { 
-  class(i, "Object", "List")
+  List(i)
   i.id = ++AU.id
   i.ako= ako
+  return "Object"
 }
 
 func class(i,kid,up)  {        
@@ -14,10 +15,10 @@ func class(i,kid,up)  {
   @up(i) 
   i.ako = kid
 }
-func clasS(i,kid,up,a)         { AU.parent[kid]=up; @up(i,a) }
-func claSS(i,kid,up,a,b)       { AU.parent[kid]=up; @up(i,a,b) }
-func clASS(i,kid,up,a,b,c)     { AU.parent[kid]=up; @up(i,a,b,c) }
-func cLASS(i,kid,up,a,b,c,d)   { AU.parent[kid]=up; @up(i,a,b,c,d) }
+func clasS(i,kid,up,a)         { AU.parent[kid]=up; @up(i,a); i.ako=kid }
+func claSS(i,kid,up,a,b)       { AU.parent[kid]=up; @up(i,a,b); i.ako=kid }
+func clASS(i,kid,up,a,b,c)     { AU.parent[kid]=up; @up(i,a,b,c); i.ako=kid }
+func cLASS(i,kid,up,a,b,c,d)   { AU.parent[kid]=up; @up(i,a,b,c,d); i.ako=kid }
 
 func have(i,key,fun) {
   i[key][0] # temp holder to make a sub-array
@@ -31,12 +32,14 @@ func HAVE(i,key,fun,a,b,c,d)   { have(i,key); @fun(i[key],a,b,c,d) }
 
 func polymorphism(i,f,    class,g) {
   class=i.ako
-  while (class)  {
+  do { 
     g= class f
-    if (f in FUNCTAB)
-      return f
+    if (g in FUNCTAB) {
+      METHOD=g
+      return
+    }
     class = AU.parent[class]
-  }
+  } while(class)
   print "#E> undefined " f " in " class 
   exit 1
 }
