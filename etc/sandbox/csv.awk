@@ -13,7 +13,7 @@ func Csv(i) {
   i.nump   = "[" MORE LESS NUM "]"
   i.sep    = ","
 }
-func Row(i) {
+function Row(i) {
   class(i,"Row")
   have(i,"x")
   have(i,"y")
