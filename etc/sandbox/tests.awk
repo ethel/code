@@ -20,8 +20,8 @@ function tests(    f,try,fail,err) {
       if (@f())  {
         fail++
 	      print "\n### E >>>>>>>>>>>>> " f " FAIL!!! " }}}
-  print "\n### Tries=",y,
-        "Failures=",n,
+  print "\n### Tries=",try,
+        "Failures=",fail,
         "("100*int(0.5+ (fail+0)/(try+ZIP))" %)" 
 }
 BEGIN { tests() }

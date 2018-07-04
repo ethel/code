@@ -5,7 +5,7 @@ function List(i) { split("",i,"") }
 function Object(i) { 
   List(i)
   i.id = ++AU.id
-  i.ako= ako
+  i.ako= "Object"
 }
 function class(i,kid,up)  {        
   up = up ? up : "Object"

@@ -8,6 +8,7 @@ function Csv(i) {
   holds(i,"x")
   holds(i,"y")
   holds(i,"xy")
+  holds(i,"rows")
   holds(i,"use")
   i.klassp = "[" MORE LESS KLASS "]"
   i.nump   = "[" MORE LESS NUM "]"
@@ -18,51 +19,46 @@ function Row(i) {
   i.dom  = 0
   i.best = 0
 }
-function RowInc(i, csv, cells) {
-  for(pos in csv.use) {
+function RowInc(i,csv,cells,   pos,xy) {
+  for(pos in csv.use)  {
     xy = csv.xy[pos]
-    i[xy][pos] =  @Inc(csv[xy][pos], cells[pos]) }
+    i.cells[pos] = @Inc(csv[xy][pos], cells[pos]) }
 }
-
-function CsvFromFile(i,file,        txts,txt,cells, line) {
+function CsvFromFile(i,file,        txts,txt,cells, row) {
   while((getline txt < file) > 0)  {
      gsub(/[ \t\r]*/, "", txt) # no whitespce:
      gsub(/#["*"]$/,     "", txt) # no comments
      if (txt) {
-       if (txt ~ /,$/)
-         txts = txts txt
-       else {
-         split(txts,cells, ",")
+       txts = txts txt
+       if (txts !~ /,$/) {
+         split(txts, cells, ",")
          txts = ""
-         if (line++) {
-           holds(i.rows,line,"Row")
-           RowInc(i.rows[line],i,cells)  }
-         else
-           CsvHeader(i,cells)  }}}
+         if (row) {
+           holds(i.rows, row, "Row")
+           RowInc(i.rows[row], i, cells) 
+         }
+         else  
+           CsvHeader(i,cells) 
+         row++
+  }}}
   close(file)
 }
 function CsvHeader(i,cells,       j,txt,pos,xy,what) {
-  for(j=1;j<=length(cells);j++) {
+  for(j in cells) {
     txt = cells[j]
     if (txt !~ SKIP) {
-      i.use[++pos] = j
-      xy = i.xy[pos] = txt ~ i.klassp ? "y"   : "x"
-      what  = txt ~ i.nump   ? "Num" : "Sym"
-      holDS(i[xy],pos,what,txt,pos)
-      if (txt ~ i.LESS)  i[where][pos].w= -1
-      if (txt ~ i.KLASS) i.klass=pos }}
+      i.use[++pos] =  j
+      xy    = i.xy[pos] = (txt ~ i.klassp) ? "y"   : "x"
+      what  = (txt ~ i.nump)               ? "Num" : "Sym"
+      holDS(i[xy],pos,what,pos,txt)
+      if (txt ~ LESS)  i[xy][pos].w= -1
+      if (txt ~ KLASS) i.klass=pos 
+  }}
 }       
 function CSV_(    c) { 
   Csv(c)
   CsvFromFile(c,"____/____/data/auto__csv") 
-}
-function CSV1(c,x,y,line) {
-  print line
- # o(x,"x")
- # o(y,"y")
- # o(c.nums,"nums")
- # o(c.syms,"syms")
- # if (line > 3) exit
+  #o(c.x)
 }
 
 BEGIN {if (MAIN=="csv") CSV_() }

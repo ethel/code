@@ -72,8 +72,8 @@ function NumInc1(i,x,    d) {
   i.mu += d/i.n
   i.m2 += d*(x - i.mu)
   i.sd  = (i.m2/(i.n - 1 + ZIP))^0.5
-  if (x > i.hi) x = i.hi
-  if (x < i.lo) x = i.lo
+  if (x > i.hi) i.hi = x
+  if (x < i.lo) i.lo = x
 }      
 function NumDec1(i,x,    d) {  
   i.n--
@@ -83,7 +83,7 @@ function NumDec1(i,x,    d) {
   i.sd  = (i.m2/(i.n - 1 + ZIP))^0.5
 }
 #----------------------------------
-function ThingSlow_(t) {
+function ThingSlow(t,    j,n,s) {
   Num(n)
   Sym(s)
   for(j=1;j<=10^4;j++) {
@@ -92,7 +92,7 @@ function ThingSlow_(t) {
   }
   print n.n, n.mu,n.sd,s.n
 }
-function ThingFast_(t) {
+function ThingFast(t,   n,j,s) {
   Num(n)
   Sym(s)
   for(j=1;j<=10^4;j++) {
