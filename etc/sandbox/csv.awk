@@ -4,7 +4,7 @@
 @include "thing"
 
 function Csv(i) {
-  class(i,"Csv")
+  isa(Object(i))
   holds(i,"x")
   holds(i,"y")
   holds(i,"xy")
@@ -14,7 +14,7 @@ function Csv(i) {
   i.nump   = "[" MORE LESS NUM "]"
 }
 function Row(i) {
-  class(i,"Row")
+  isa(Object(i))
   holds(i,"cells")
   i.dom  = 0
   i.best = 0
@@ -55,11 +55,14 @@ function CsvHeader(i,cells,       j,txt,pos,xy,what) {
       if (txt ~ KLASS) i.klass=pos 
   }}
 }       
-function CSV_(    c) { 
+function auto_() { csv1("auto") }
+function weather_() { csv1("weather") }
+
+function csv1(d,    c) { 
   Csv(c)
-  CsvFromFile(c,"____/____/data/auto__csv") 
+  CsvFromFile(c,"____/____/data/"  d "__csv") 
   o(c.x)
 }
 
-BEGIN {if (MAIN=="csv") CSV_() }
+BEGIN {if (MAIN=="csv") weather_()  }
 

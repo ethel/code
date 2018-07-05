@@ -2,7 +2,8 @@
 
 BEGIN {
   INF=10^32;  NINF= -1*10^32; ZIP=1/INF; 
-  PI=3.14159; EE=2.719
+  PI=3.1415926535897932 # 16 decimals
+  EE=2.7182818284590452 # 16 decimals
   SKIP="?"; MORE=">"; LESS="<"; KLASS="!"; NUM="$"
 }
 

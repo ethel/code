@@ -103,9 +103,17 @@ prepCode() {
       function prep(txt) {
         if (txt ~ /^@include/) return txt
         if (txt ~ /^[ \t]*#/ ) return txt
-	txt= gensub(/@([A-Z][^\(]+)\(([^,]+),/,
-	            "polymorphism(\\2,\"\\1\")@METHOD(\\2,",
-		    "g",txt)
+        if (txt ~ /^[ \t]*function/) 
+           f = gensub(/^[ \t]*function[ \t]*([A-Za-z0-9_]+)\(.*/,"\\1","g",txt)
+        if (txt ~ /^[ \t]*isa/ ) {
+          txt = gensub(/^([ \t]*)isa\(([^\(]+)\(([^,]),(.+)/,
+                       "\\1isa(\\3,\""f"\",\"\\2\",\\2(\\4", 
+                       "g",txt)
+        }
+        if (txt ~ /@/) 
+          txt = gensub(/^(.*)@([A-Z][^\(]+)\(([^,]+),/,
+	                      "polymorphism(\\3,\"\\2\");\\1@METHOD(\\3,",
+		                    "g",txt)
         txt= gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, 
 	            "[\"\\1\\2\"]", 
 	            "g", txt)

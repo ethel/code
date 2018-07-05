@@ -3,20 +3,18 @@
 function List(i) { split("",i,"") }
 
 function Object(i) { 
-  List(i)
+  isa(List(i))
   i.id = ++AU.id
   i.ako= "Object"
 }
-function class(i,kid,up)  {        
-  up = up ? up : "Object"
-  AU.parent[kid]=up
-  @up(i) 
+function isa(i,kid,parent,_) {
+  AU.parent[kid] = up
   i.ako = kid
 }
-function clasS(i,kid,up,a)         { AU.parent[kid]=up; @up(i,a); i.ako=kid }
-function claSS(i,kid,up,a,b)       { AU.parent[kid]=up; @up(i,a,b); i.ako=kid }
-function clASS(i,kid,up,a,b,c)     { AU.parent[kid]=up; @up(i,a,b,c); i.ako=kid }
-function cLASS(i,kid,up,a,b,c,d)   { AU.parent[kid]=up; @up(i,a,b,c,d); i.ako=kid }
+#function clasS(i,kid,up,a)         { AU.parent[kid]=up; @up(i,a); i.ako=kid }
+#function claSS(i,kid,up,a,b)       { AU.parent[kid]=up; @up(i,a,b); i.ako=kid }
+#function clASS(i,kid,up,a,b,c)     { AU.parent[kid]=up; @up(i,a,b,c); i.ako=kid }
+#function cLASS(i,kid,up,a,b,c,d)   { AU.parent[kid]=up; @up(i,a,b,c,d); i.ako=kid }
 
 function holds(i,key,fun) {
   i[key][0] # temp holder to make a sub-array

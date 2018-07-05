@@ -4,36 +4,40 @@
 
 #----------------------------------
 function Thing(i,pos,txt) {
-  class(i,"Thing")
+  isa(Object(i))
   i.pos=pos
   i.txt=txt
   i.n = 0
   i.w = 1
+  print("initing thing")
+}
+function ThingPrep(i,x) { 
+  return x 
 }
 function ThingInc(i,x) {
   if ( x==SKIP) return x
-  print "x",x
-  i.n++
+  x = @Prep(i,x)
+  i.n++   
   @Inc1(i,x)
   return x
 }
 function ThingDec(i,x) {
   if ( x==SKIP) return x
-  if ( i.n < 3) return x
-  x = @Prep(i,x)
+  if ( i.n < 3) return x    
+  x = @Prep(i,x)  
   i.n--
-  @Dec1(i,x) 
-  return x 
+  @Dec1(i,x)     
+  return x       
 }
 #----------------------------------
 function Sym(i,pos,txt) {
-  claSS(i,"Sym","Thing",pos,txt)
+  isa(Thing(i,pos,txt))
   holds(i,"counts")
-  i.mode = ""
-  i.most = 0
-  i._ent =""
+  i.mode = ""    
+  i.most = 0    
+  i._ent =""     
   i.n = 0
-}
+}   
 function SymInc1(i,x,   tmp) {
   i._ent = ""
   tmp = i.counts[x] = i.counts[x] + 1 
@@ -43,9 +47,9 @@ function SymInc1(i,x,   tmp) {
 }
 function SymDec1(i,x,   tmp) {
   i._ent = ""
-  i.counts[x]--
+  i.counts[x]--      
   return x
-}  
+}      
 function SymEnt(i,   x,p) {
   if(!i._ent)
     for(x in i.counts) {
@@ -55,17 +59,18 @@ function SymEnt(i,   x,p) {
 }
 #----------------------------------
 function Num(i,pos,txt) { 
-  claSS(i,"Num","Thing",pos,txt) 
+  isa(Thing(pos,txt)) 
   i.lo=INF 
   i.hi=NINF
   i.m2 = i.mu = i.n = 0 
   if (pos) i.pos=pos
   if (txt) i.txt=txt
 }
-
+function NumPrep(i,x) {  
+  return  0 + x 
+}
 function NumInc1(i,x,    d) {
-  x    += 0
-  d     = x - i.mu
+  d     = x - i.mu 
   i.mu += d/i.n
   i.m2 += d*(x - i.mu)
   i.sd  = (i.m2/(i.n - 1 + ZIP))^0.5
@@ -73,9 +78,8 @@ function NumInc1(i,x,    d) {
   if (i.pos == 3) print x,i.lo, x < i.lo
   if (x < i.lo) i.lo = x
 }      
-function NumDec1(i,x,    d) {  
-  i.n--
-  d     = x - i.mu
+function NumDec1(i,x,    d) {     
+  d     = x - i.mu  
   i.mu -=  d/i.n
   i.m2 -= d*(x- i.mu)
   i.sd  = (i.m2/(i.n - 1 + ZIP))^0.5
