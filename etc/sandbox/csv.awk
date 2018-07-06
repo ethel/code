@@ -51,6 +51,9 @@ function CsvHeader(i,cells,       j,txt,pos,xy,what) {
       xy    = i.xy[pos] = (txt ~ i.klassp) ? "y"   : "x"
       what  = (txt ~ i.nump)               ? "Num" : "Sym"
       holDS(i[xy],pos,what,pos,txt)
+      #at(i[xy],pos,@what(w, pos,txt))
+      #at(i[xy],pos,@what(w,pos,txt))
+      #at(i[xy],pos);  @what(w=i[xy][pos], pos,txt)
       if (txt ~ LESS)  i[xy][pos].w= -1
       if (txt ~ KLASS) i.klass=pos 
   }}

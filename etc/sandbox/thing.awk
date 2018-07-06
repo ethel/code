@@ -4,17 +4,17 @@
 
 #----------------------------------
 function Thing(i,pos,txt) {
-  isa(Object(i))
+  ako(Object(i))
   i.pos=pos
   i.txt=txt
   i.n = 0
   i.w = 1
-  print("initing thing")
+  print("initing thing")    
 }
 function ThingPrep(i,x) { 
   return x 
 }
-function ThingInc(i,x) {
+function ThingInc(i,x) {   
   if ( x==SKIP) return x
   x = @Prep(i,x)
   i.n++   
@@ -28,16 +28,16 @@ function ThingDec(i,x) {
   i.n--
   @Dec1(i,x)     
   return x       
-}
+}  
 #----------------------------------
 function Sym(i,pos,txt) {
-  isa(Thing(i,pos,txt))
+  ako(Thing(i,pos,txt))
   holds(i,"counts")
   i.mode = ""    
   i.most = 0    
   i._ent =""     
-  i.n = 0
-}   
+  i.n = 0 
+}     
 function SymInc1(i,x,   tmp) {
   i._ent = ""
   tmp = i.counts[x] = i.counts[x] + 1 
@@ -59,7 +59,7 @@ function SymEnt(i,   x,p) {
 }
 #----------------------------------
 function Num(i,pos,txt) { 
-  isa(Thing(pos,txt)) 
+  ako(Thing(i,pos,txt)) 
   i.lo=INF 
   i.hi=NINF
   i.m2 = i.mu = i.n = 0 
@@ -108,16 +108,23 @@ function Nums_(    n,j,a,fails,sds,mus,hi) {
 	   " 233 250 260 270 299 300 306 333 350 375 443 475"\
            " 525 583 780 1000",a)
   Num(n)
+  print 1
   o(n)
+  print 2
   for (j=1;j<=hi;j++ ) {
+    print 3
     sds[n.n] = n.sd
     mus[n.n] = n.mu  
-    @Inc(n, a[j])  } 
+    print 4
+    @Inc(n, a[j]) 
+    print 5
+  } 
   while(j-- > 0) {
     if (j in sds) {
       fails += (abs(n.mu - mus[j]) > 0.0001)  
       fails += (abs(n.sd - sds[j]) > 0.0001) } 
     @Dec(n, a[j]) }
+  print fails
   return fails 
 }
 

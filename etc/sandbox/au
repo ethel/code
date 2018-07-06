@@ -93,7 +93,7 @@ prepCode() {
   for f in *.awk; do
     g="$Var/$f"
     if [ "$f" -nt "$g" ]; then
-      echo "# au $f ==> $g"  >&2
+      echo "# au $f ==> $g"  >&2      
       cat $f | gawk '
       BEGIN {In=1}
       gsub(/^\"\"\"/,"") { In =  1 - In }
@@ -105,18 +105,18 @@ prepCode() {
         if (txt ~ /^[ \t]*#/ ) return txt
         if (txt ~ /^[ \t]*function/) 
            f = gensub(/^[ \t]*function[ \t]*([A-Za-z0-9_]+)\(.*/,"\\1","g",txt)
-        if (txt ~ /^[ \t]*isa/ ) {
-          txt = gensub(/^([ \t]*)isa\(([^\(]+)\(([^,]),(.+)/,
-                       "\\1isa(\\3,\""f"\",\"\\2\",\\2(\\4", 
-                       "g",txt)
+        if (txt ~ /^[ \t]*ako/ ) {
+           txt = gensub(/^([ \t]*)ako\(([^\(]+)\(([^,\)])([,\)].+)/,
+                        "\\1ako(\\3,\""f"\",\"\\2\",\\2(\\3\\4", 
+                        "g",txt)
         }
         if (txt ~ /@/) 
-          txt = gensub(/^(.*)@([A-Z][^\(]+)\(([^,]+),/,
-	                      "polymorphism(\\3,\"\\2\");\\1@METHOD(\\3,",
+           txt = gensub(/^(.*)@([A-Z][^\(]+)\(([^,]+),/,
+	                      "polymorphism(\\3,\"\\2\");\\1@METHOD(\\3",
 		                    "g",txt)
         txt= gensub(/\.([^0-9])([a-zA-Z0-9_]*)/, 
-	            "[\"\\1\\2\"]", 
-	            "g", txt)
+	                  "[\"\\1\\2\"]", 
+	                  "g", txt)
         gsub(/__/,".",txt)
         return txt
        }
@@ -148,7 +148,7 @@ prepDoc() {
 	    { sub(/^#/,"")
 	      print }
 	END { if (In) print "```\n" }
-      ' $f > $g
+      ' $f  > $g
     fi
   done
 }

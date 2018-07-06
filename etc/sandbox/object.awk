@@ -3,12 +3,11 @@
 function List(i) { split("",i,"") }
 
 function Object(i) { 
-  isa(List(i))
-  i.id = ++AU.id
-  i.ako= "Object"
+  ako(List(i))  
+  i.id = ++AU.id  
 }
-function isa(i,kid,parent,_) {
-  AU.parent[kid] = up
+function ako(i,kid,parent,_) {
+  AU.parent[kid] = parent
   i.ako = kid
 }
 #function clasS(i,kid,up,a)         { AU.parent[kid]=up; @up(i,a); i.ako=kid }
