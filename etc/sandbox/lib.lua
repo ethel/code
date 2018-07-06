@@ -1,5 +1,6 @@
 require "the"
 
+
 -------------------------------------------------------------
 -- ## Misc  Stuff 
 
@@ -20,7 +21,7 @@ function sub(s,lo,hi)
   if lo and lo < 0 then
     return sub(s, string.len(s) + lo +1)
   else
-    return string.sub(s,lo and lo or 1,hi) end end
+    return string.sub(s,lo and lo or 1,hi) end end    
 
 function subOkay()
   assert(sub("timm")=="timm")
@@ -33,9 +34,12 @@ end
 -- ### oo(x : anything)
 -- Print anything, including nested things
 function oo(data) 
+  local seen={}
   local function go(x,       str,sep)  -- convert anything to a string
      if type(x) ~= "table" then 
        return tostring(x)  end
+     if seen[x] then return "..." end
+     seen[x] = true
      for i, v in pairs(x) do 
         str = str .. sep .. i .. ": " .. go(v,"{","")
         sep = ", "
@@ -79,7 +83,12 @@ function tests()
      go(v) end
    print("-- Failures: ".. 1-((try-fail)/try) .. "%") end
 
-
+-- main{m:string = f:function}
+-- Run function `f` if we are in module `m`.
+-- Used  like Python's if \_\_name\_\_ == '\_\_main\_\_'. 
+function main(t) 
+  for s,f in pairs(t) do
+    if s == os.getenv("MAIN") then return f() end end end
 -------------------------------------------------------------
 -- ## Object Stuff
 
@@ -100,8 +109,9 @@ end
 function anyOkay()
   local x,y = Any:new(), Any:new()
   x.sub = y
-  y.seb = Any:new()
+  y.sub = x
+  assert(y.id == 1 + x.id)
   oo(x)
 end
 
-
+main{lib=tests}
