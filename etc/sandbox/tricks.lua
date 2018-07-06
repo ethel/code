@@ -1,4 +1,4 @@
-require "config"
+require "the"
 require "lib"
 
 Thing=Any:new()

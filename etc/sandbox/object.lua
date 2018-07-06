@@ -1,6 +1,6 @@
 -- /* vim: set ts=2 sw=2 sts=2 expandtab: */
 
-require "config"
+require "the"
 requure "tricks"
 
 function oo(data) 
