@@ -93,7 +93,7 @@ else
   if   [[ "$x" == "ed"      ]]; then vim -u $Var/vimrc $1
   elif [[ "$x" == "zap"     ]]; then rm -f $Doc/*.md
   elif [[ "$x" == "pull"    ]]; then git pull
-  elif [[ "$x" == "help"    ]]; then help
+  #elif [[ "$x" == "help"    ]]; then help
   elif [[ "$x" == "ok"      ]]; then lua -i "tests()" lib.lua
   elif [[ "$x" == "push"    ]]; then
      git status
