@@ -13,9 +13,7 @@ require "thing"
 -- non-ignored rows of cells are returns, one at a time. 
 
 function rows(file)
-  io.input(file)
-  local cache,want,nextLine = {},nil,io.read()
-    
+  local want = nil
   local function wantedCells(t,out)
     if not want then -- find cols marked as not unwanted
       want={}
@@ -26,6 +24,8 @@ function rows(file)
       out[ #out+1 ] = fromString( t[ want[i] ] ) end
     return out end
   
+  io.input(file)
+  local cache,nextLine = {},io.read()
   return function ()
     while nextLine do
       local line = nextLine:gsub("[\t\r ]*",""):gsub("#.*","")
