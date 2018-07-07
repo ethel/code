@@ -13,32 +13,30 @@ require "thing"
 -- non-ignored rows of cells are returns, one at a time. 
 
 function rows(file)
-  local want = nil
-  local function wantedCells(t,out)
-    if not want then -- find cols marked as not unwanted
-      want={}
-      for source = 1,#t do
-         if not string.find(t[source],"?") then 
-           want[#want+1] = source end end end
-    for i=1,#want do
-      out[ #out+1 ] = fromString( t[ want[i] ] ) end
-    return out end
-  
   io.input(file)
-  local cache,nextLine = {},io.read()
+  local use, cache, todo = {}, {}, io.read()
+  local need= function (s) return not string.find(s,"?") end
   return function ()
-    while nextLine do
-      local line = nextLine:gsub("[\t\r ]*",""):gsub("#.*","")
-      cache[#cache+1] = line
-      nextLine = io.read()
+    if todo then
+      local line= todo:gsub("[\t\r ]*",""):gsub("#.*","")
+      todo= io.read()
+      cache[#cache+1]= line
       if sub(line,-1) ~= ","  then
-	 local lines = table.concat(cache)
-	 if string.len(lines)>0  then
-           cache= {}
-	   return wantedCells(split(lines), {})  end end end end  end
-
-Data=Any:new{}
+	local txt = table.concat(cache)
+        print("[" ..txt.. "]")
+	if string.len(txt)>0  then
+          cache= {}
+          local a,b = split(txt), {}
+          if #use == 0 then -- find cols marked not unwanted
+            for i = 1,#a do
+              if need(a[i]) then use[#use+1]= i end end end
+	  for i=1,#use do
+            b[#b+1] = fromString( a[ use[i] ] ) end
+	  return b  end end
+    else
+      io.input():close() 
+      return nil  end end end
 
 for row in rows("../../data/weather.csv") do
-   print(table.concat(row,", "))
+   oo(row)
 end
