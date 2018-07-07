@@ -19,7 +19,7 @@ function rows(file)
       want={}
       for source = 1,#t do
          if not string.find(t[source],"?") then 
-           want[#want+1] = source end end 
+           want[#want+1] = source end end end
     for i=1,#want do
       out[ #out+1 ] = fromString( t[ want[i] ] ) end
     return out end
