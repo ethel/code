@@ -3,7 +3,7 @@ function defaults() return {
   sep=    ",",
   inf=    10^32,
   ninf=   -10^32,
-  zip =   10^-32,
+  zip =   10^(-32),
   here=   os.getenv("Lure"),
   sample= { b=200,
             most=512,
@@ -12,7 +12,7 @@ function defaults() return {
             fmtnum="%5.3f",
             cliffsDelta=0.147 -- small,medium,large=0.147,0.33,0.474
             },
-  tree=   { ish=1.00,
+  tree=   { ish=1.02,
             min=2, 
             maxDepth=10},
   tbl=    { k=5 },

@@ -3,7 +3,52 @@
 Tmp="/tmp/$USER/lure/tmp"
 Doc="$HOME/opt/lua/lure/doc"
 
+# the -> lib          
+#          \-> thing -> csv
+#
+#
+
+
+hello() { cat<<EOF	
+${red}lure = multi-objective rule generation
+v1.9 (c) 2018, Tim Menzies, BSD 2-clause license${white}
+EOF
+}
+copyright() { hello; cat <<EOF
+All rights reserved.
+
+Copyright (c) 2018, Tim Menzies
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+* Redistributions of source code must retain the above copyright notice, this
+  list of conditions and the following disclaimer.
+
+* Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+EOF
+}
+
 mkdir -p $Tmp $Doc
+
+ltyl=$(tput setaf 11)
+white=$(tput setaf 15)
+red=$(tput setaf 1)
+
 
 cat<<EOF>$Tmp/vimrc
         set backupdir-=.
@@ -50,19 +95,70 @@ doc() {
     fi
   done
 }
+banner() { cat <<-"EOF"
+                                 _H_     | LURE v1.9
+                                /___\    | https://github.com/lualure/info
+                                \888/    |
+~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~U~^~| "Dream big and dare to fail."
+                   ~              |      |  -- Norman Vaughan
+   ~                        o     |      |
+             ___        o         |      | "The charm of fishing is that it is 
+    _,.--,.'`   `~'-.._    O      |      |  the pursuit of what is elusive but 
+   /_  .-"      _   /_\'.         |   ~  |  attainable, a perpetual series of 
+  .-';'       (( `  \0/  `\       #      |  occasions of hope." 
+ /__;          ((_  ,_     |      #      |  -- Jack Nicklaus
+ .-;                  \_   /  #  _#,     |
+/  ;    .-' /  _.--""-.\`~`   `#(('\\    | "There are always new places to 
+;-';   /   / .'                  )) \\   |  go fishing. For those who fish,
+    ; /.--'.'                   ((   ))  |  there's always a new place, 
+     \     |        ~            \\ ((   |  always a new horizon." 
+      \    |                      )) `   |  -- John Buchan
+~      \   |                      `      |
+        \  |                             | "Gone fishin', for a new idea." 
+   jgs  .` `""-.                         |  -- Tim Menzies
+      .'        \         ~              
+      |    |\    |
+      \   /  '-._|
+       \.'
+
+EOF
+}
+help() {
+  hello
+  echo -n $ltyl; banner; echo -n $white
+  cat<<-EOF
+	./lure FILE       	run FILE.awk
+	./lure ed FILE		edit FILE 
+	./lure okay 		run all tests
+	./lure zap 		delete generated files (forces recompile)
+	./lure pull		get from git
+	./lure push		send back to git
+	./lure license		show license
+	./lure help		show help
+ 
+	As a side-effect of running ./lure, the directory 
+	"$Doc" is updated with current versions of the 
+	html generated from the *.lua files in this directory.
+
+	Note that this code cannot load any X.lua file for
+	X in ed, okay, zap, pull, push, license, help. 
+	EOF
+}
 if [ -z "$1" ]; then
+  hello
+  echo
   echo "Type './lure help' for a list of options"
   doc
 else
   x=$1
   shift
-  echo "$*"
   if   [[ "$x" == "ed"      ]]; then vim -u $Tmp/vimrc $1
   elif [[ "$x" == "zap"     ]]; then rm -f $Doc/*.md
   elif [[ "$x" == "pull"    ]]; then git pull
   elif [[ "$x" == "doc"     ]]; then doc
   elif [[ "$x" == "help"    ]]; then help
-  elif [[ "$x" == "okay"    ]]; then lua -i "tests()" lib.lua
+  elif [[ "$x" == "license" ]]; then copyright
+  elif [[ "$x" == "okay"    ]]; then lua tests.lua
   elif [[ "$x" == "push"    ]]; then
      git status
      git commit -am "commiting"
