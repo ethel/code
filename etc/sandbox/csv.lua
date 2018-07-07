@@ -23,9 +23,9 @@ function rows(file)
       cache[#cache+1]= line
       if sub(line,-1) ~= ","  then
 	local txt = table.concat(cache)
+        cache= {}
         print("[" ..txt.. "]")
 	if string.len(txt)>0  then
-          cache= {}
           local a,b = split(txt), {}
           if #use == 0 then -- find cols marked not unwanted
             for i = 1,#a do
