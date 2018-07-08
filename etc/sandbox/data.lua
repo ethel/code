@@ -77,11 +77,13 @@ function auto1000KOkay() dataOkay("auto1000K") end
 function weatherOkay()   
   local d = dataOkay("weather") 
   oo(d.all.cols)
-  assert( close( d.all.syms[1]:ent(),  1.57) ) 
-  assert( close( d.all.syms[2]:ent(),  0.98) )  
-  assert( close( d.all.syms[3]:ent(),  0.94) )  
-  assert( close( d.all.nums[1].mu,    73.57) )
-  assert( close( d.all.nums[1]:sd(),   6.57) )  end
+  print(d.all.syms[1]:ent())
+  assert( close( d.all.syms[1]:ent(),  1.58, 1) ) 
+  print(d.all.syms[2]:ent())
+  assert( close( d.all.syms[2]:ent(),  0.98, 1) )  
+  assert( close( d.all.syms[3]:ent(),  0.94, 1) )  
+  assert( close( d.all.nums[1].mu,    73.57, 1) )
+  assert( close( d.all.nums[1]:sd(),   6.57, 1) )  end
 
 function dataOkay(f)
   roguesOkay()

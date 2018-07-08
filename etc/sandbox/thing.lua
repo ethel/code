@@ -30,8 +30,7 @@ function Thing:simpler(i,j)
 -- class Sym
 Sym= Thing:new{counts,mode,most=0,_ent}
 
-function Sym:ready()
-   self.counts = {} end
+function Sym:ready() self.counts = {} end
 
 function Sym:doubt() return self:ent() end
 
