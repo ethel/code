@@ -47,27 +47,28 @@ function Data:data(row)
 -- ### Data:header(row: list)
 -- Build the data headers.
 function Data:head(row)
-  local done= function (z) return true                   end
-  local less= function (z) push(z, self.y.less); z.w= -1 end
-  local more= function (z) push(z, self.y.more);         end
-  local klass=function (z) self.klass = z                end
-  local all = {{" ", Sym, "x","syms", done},  -- default
-               {"%$",Num, "x","nums", done},  -- others
+  local less=  function (i) push(i, self.y.less); i.w= -1 end
+  local more=  function (i) push(i, self.y.more) end
+  local klass= function (i) self.klass = i end
+  local done=  function (i) return true end
+  local all = {{"%$",Num, "x","nums", done},  -- others
                {"<" ,Num, "y","nums", less},
                {">" ,Num, "y","nums", more},
-               {"!" ,Sym, "y","syms", klass}}
-  local function what2do(pos, txt, t)
-    for i=2,#all do
-      if string.find(txt, all[i][1]) then t=all[i] end end
-    return t[2]:new{pos=pos,txt=txt}, t[3], t[4], t[5] end
+               {"!" ,Sym, "y","syms", klass},
+	       {".", Sym, "x","syms", done}} -- default
+  for pos,txt in pairs(row) do  -- for all headers
+    for _,t in pairs(all)  do   --    for all header types
+      pattern, what, xy, ako, also = unpack( t )
+      if string.find(txt, pattern) then -- if this type is me..
+        thing = what:new{pos=pos,txt=txt}
+        self:head1(thing, ako, xy)
+        also(thing)  end end end end
 
-  for pos,txt in pairs(row) do 
-    local thing, xy, kind, also = what2do(pos,txt, all[1])
-    also(thing)
-    push(thing, self.all.cols)
-    push(thing, self.all[kind])
-    push(thing, self[xy].cols)
-    push(thing, self[xy][kind])  end end
+function Data:head1(thing, kind, xy) 
+  push(thing, self.all.cols)
+  push(thing, self.all[kind])
+  push(thing, self[xy].cols)
+  push(thing, self[xy][kind]) end 
 
 -------------------------------------------------
 -- ## Test Stuff
@@ -76,6 +77,7 @@ function auto10KOkay()   dataOkay("auto10K") end
 function auto1000KOkay() dataOkay("auto1000K") end
 function weatherOkay()   
   local d = dataOkay("weather") 
+  oo(d.all.cols)
   assert( close( d.all.syms[1]:ent(),  1.57) ) 
   assert( close( d.all.syms[2]:ent(),  0.98) )  
   assert( close( d.all.syms[3]:ent(),  0.94) )  

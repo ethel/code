@@ -196,6 +196,7 @@ function Any:new (o)
 end
 
 function Any:ready() return self end
+function Any:pass(...) return self end
 
 function anyOkay()
   local x,y = Any:new(), Any:new()
