@@ -1,0 +1,12 @@
+# Notes
+
+## Great Lua Bug
+
+Here's a great Lua bug:
+
+```
+Sym= Thing:new{counts={},mode,most=0,_ent}
+```
+
+Now all the `Sym`s get the _same_ `counts` table.  So never include a container in the inits.
+

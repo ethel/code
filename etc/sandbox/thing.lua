@@ -1,6 +1,6 @@
 require "lib"
 
-Thing=Any:new{pos,txt, w=1, n=0}
+Thing=Any:new{pos,txt,w=1,n=0}
 
 function Thing:incs(t, f)
   f = f and f or function (z) return z end
@@ -28,23 +28,26 @@ function Thing:simpler(i,j)
 
 ----------------------------------------
 -- class Sym
-Sym= Thing:new{counts={}, mode, most=0, _ent}
+Sym= Thing:new{counts,mode,most=0,_ent}
+
+function Sym:ready()
+   self.counts = {} end
 
 function Sym:doubt() return self:ent() end
 
 function Sym:ent()
   if self._ent == nil then
     self._ent=0
-    for _,v in pairs(self.counts) do
-      p      = v/self.n
-      print("<<",v,self.n,p)
-      self._ent = self._ent + p * math.log(p,2) end end
+    for x,n in pairs(self.counts) do
+      p      = n/self.n
+      self._ent = self._ent - p * math.log(p,2) end end
   return self._ent end
 
 function Sym:inc1(x)
   self._ent= nil
   local old = self.counts[x] 
   local new = old and old + 1 or 1
+  self.counts[x] = new
   if new > self.most then
     self.most, self.mode = new, x end end
 

@@ -51,6 +51,12 @@ local function member(x,t)
   return false
 end
 
+-- ### push(x, t:table): x
+-- Pushes `x` to the end of table `t`. Returns `x`.  
+function push(x,t) 
+  t[ #t+1 ] = x; return x 
+end
+
 -------------------------------------------------------------
 -- ## Environment Stuff
 -- ### args(settings:table, ignore: table, updates:table)
@@ -135,8 +141,8 @@ function oo(data)
 -- Checked for escaped local. Report number of assertion failures.
 function roguesOkay()
   local ignore = {
-           math=true, package=true, table=true, coroutine=true, 
-           os=true, io=true, bit32=true, string=true,
+           jit=true, math=true, package=true, table=true, coroutine=true, 
+           bit=true, os=true, io=true, bit32=true, string=true,
            arg=true, debug=true, _VERSION=true, _G=true }
   for k,v in pairs( _G ) do
     if type(v) ~= "function" and not ignore[k] then
@@ -168,6 +174,7 @@ function tests()
 -- e.g. `main{lib=doThis}` will call `doThis()` if
 -- the environment variable MAIN equals `lib`.
 function main(t) 
+  roguesOkay()
   for s,f in pairs(t) do
     if s == os.getenv("MAIN") then return f() end end end
 
@@ -184,8 +191,11 @@ function Any:new (o)
   self.oid = self.oid+1
   self.__index = self
   o.id = self.oid
+  o:ready()
   return o
 end
+
+function Any:ready() return self end
 
 function anyOkay()
   local x,y = Any:new(), Any:new()

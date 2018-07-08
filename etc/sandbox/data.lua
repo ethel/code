@@ -23,14 +23,16 @@ Data = Any:new{
        less={}, more={}}}  
 
 -- ### Data:csv(file: string)
--- Read data in  from `file`.
+-- Read data in  from `file`. Return `self`.
 function Data:csv(file)
-  for row in csv(file) do self:inc(row) end end
+  for row in csv(file) do self:inc(row) end 
+  return self end
 
 -- ### Data:inc(row: list)
 -- If this is the first row, interpret `row` as the column headers.
 -- Otherwise, read `row` as data.
 function Data:inc(row)
+  push(row, self.rows)
   if   self.header then self:data(row) 
   else self.header=row; self:head(row) end end
 
@@ -38,54 +40,51 @@ function Data:inc(row)
 -- Add `row` to `self.rows`. Increment the header statistics
 -- with information from `row`'s values.
 function Data:data(row) 
-   self.rows[ #self.rows + 1 ] = row
+   push(row,self.rows, row)
    for _,thing in pairs(self.all.cols) do
      thing:inc( row[thing.pos ] ) end end
 
 -- ### Data:header(row: list)
 -- Build the data headers.
 function Data:head(row)
-  local all,x,y=self.all, self.x, self.y
-  local default= {what= Sym, weight=  1, 
-                  where = {all.cols,all.syms,x.cols,x.syms}}
-  local spec= {
-    {when="%$", what= Num, weight=  1, 
-           where= {all.cols,all.nums,x.cols,x.nums}},
-    {when="<",  what= Num, weight= -1, 
-           where= {all.cols,all.nums,y.cols,y.nums,y.less}},
-    {when= ">", what= Num, weight=  1, 
-           where= {all.cols,all.nums,y.cols,y.nums,y.more}},
-    {when="!",  what= Sym, weight=  1, 
-           where= {all.cols,all.syms,y.cols,y.syms}}}
-
-  local function categorize(txt, out)
-    for _,x in pairs(spec) do
-      if string.find(txt,x.when)  then out = x end end
-    return out end
+  local done= function (z) return true                   end
+  local less= function (z) push(z, self.y.less); z.w= -1 end
+  local more= function (z) push(z, self.y.more);         end
+  local klass=function (z) self.klass = z                end
+  local all = {{" ", Sym, "x","syms", done},  -- default
+               {"%$",Num, "x","nums", done},  -- others
+               {"<" ,Num, "y","nums", less},
+               {">" ,Num, "y","nums", more},
+               {"!" ,Sym, "y","syms", klass}}
+  local function what2do(pos, txt, t)
+    for i=2,#all do
+      if string.find(txt, all[i][1]) then t=all[i] end end
+    return t[2]:new{pos=pos,txt=txt}, t[3], t[4], t[5] end
 
   for pos,txt in pairs(row) do 
-    local x     = categorize(txt,default)
-    local thing = x.what:new{pos=pos, txt=txt, w=x.weight}
-    if string.find(txt,"!") then -- add to class def
-      self.klass = thing end
-    for _,where in pairs(x.where) do -- add thing to many places
-      where[ #where+1 ] = thing  end end  end
+    local thing, xy, kind, also = what2do(pos,txt, all[1])
+    also(thing)
+    push(thing, self.all.cols)
+    push(thing, self.all[kind])
+    push(thing, self[xy].cols)
+    push(thing, self[xy][kind])  end end
 
 -------------------------------------------------
 -- ## Test Stuff
-
-function weatherOkay()   dataOkay("weather") end
 function autoOkay()      dataOkay("auto") end
-function auto10KOkay()   dataOkay("auto1OK") end
-function auti1000KOkay() dataOkay("auto1000K") end
+function auto10KOkay()   dataOkay("auto10K") end
+function auto1000KOkay() dataOkay("auto1000K") end
+function weatherOkay()   
+  local d = dataOkay("weather") 
+  assert( close( d.all.syms[1]:ent(),  1.57) ) 
+  assert( close( d.all.syms[2]:ent(),  0.98) )  
+  assert( close( d.all.syms[3]:ent(),  0.94) )  
+  assert( close( d.all.nums[1].mu,    73.57) )
+  assert( close( d.all.nums[1]:sd(),   6.57) )  end
 
 function dataOkay(f)
-  d = Data:new()
-  d:csv("../../data/".. f .. ".csv")
-  for _,x in pairs(d.all.cols) do 
-	  print(x:doubt()); 
-	  oo(x) end end
-
+  roguesOkay()
+  return Data:new():csv("../../data/".. f .. ".csv") end
 
 -------------------------------------------------
 -- ## Main Stuff
