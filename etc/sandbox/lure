@@ -4,7 +4,7 @@ Tmp="/tmp/$USER/lure/tmp"
 Doc="$HOME/opt/lua/lure/doc"
 
 # the -> lib          
-#          \-> thing -> csv
+#          \-> thing -> csv --> data
 #
 #
 
