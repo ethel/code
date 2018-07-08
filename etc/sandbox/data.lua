@@ -50,19 +50,18 @@ function Data:head(row)
   local less=  function (i) push(i, self.y.less); i.w= -1 end
   local more=  function (i) push(i, self.y.more) end
   local klass= function (i) self.klass = i end
-  local done=  function (i) return true end
-  local all = {{"%$",Num, "x","nums", done},  -- others
+  local all = {{"%$",Num, "x","nums"      },
                {"<" ,Num, "y","nums", less},
                {">" ,Num, "y","nums", more},
                {"!" ,Sym, "y","syms", klass},
-	       {".", Sym, "x","syms", done}} -- default
+	       {".", Sym, "x","syms"       }} -- default
   for pos,txt in pairs(row) do  -- for all headers
     for _,t in pairs(all)  do   --    for all header types
-      pattern, what, xy, ako, also = unpack( t )
+      local pattern, what, xy, ako, also = unpack( t )
       if string.find(txt, pattern) then -- if this type is me..
         thing = what:new{pos=pos,txt=txt}
         self:head1(thing, ako, xy)
-        also(thing)  end end end end
+        if also then also(thing) end end end end end
 
 function Data:head1(thing, kind, xy) 
   push(thing, self.all.cols)
