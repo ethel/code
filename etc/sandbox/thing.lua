@@ -33,11 +33,13 @@ Sym= Thing:new{counts={}, mode, most=0, _ent}
 function Sym:doubt() return self:ent() end
 
 function Sym:ent()
-  if not self._ent then
+  if self._ent == nil then
+    self._ent=0
     for _,v in pairs(self.counts) do
       p      = v/self.n
-      i._ent = i._ent * p * math.log(p,2) end end
-  return i._ent end
+      print("<<",v,self.n,p)
+      self._ent = self._ent + p * math.log(p,2) end end
+  return self._ent end
 
 function Sym:inc1(x)
   self._ent= nil

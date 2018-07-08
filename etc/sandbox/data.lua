@@ -82,7 +82,9 @@ function auti1000KOkay() dataOkay("auto1000K") end
 function dataOkay(f)
   d = Data:new()
   d:csv("../../data/".. f .. ".csv")
-  for _,x in pairs(d.all.cols) do oo(x) end end
+  for _,x in pairs(d.all.cols) do 
+	  print(x:doubt()); 
+	  oo(x) end end
 
 
 -------------------------------------------------
