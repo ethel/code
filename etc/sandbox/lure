@@ -158,13 +158,13 @@ else
   elif [[ "$x" == "doc"     ]]; then doc
   elif [[ "$x" == "help"    ]]; then help
   elif [[ "$x" == "license" ]]; then copyright
-  elif [[ "$x" == "okay"    ]]; then lua tests.lua
+  elif [[ "$x" == "okay"    ]]; then luajit tests.lua
   elif [[ "$x" == "push"    ]]; then
      git status
      git commit -am "commiting"
      git push
   else
     g=$(basename $x ".lua")
-    MAIN="$g" lua "$g.lua"
+    MAIN="$g" luajit "$g.lua"
   fi
 fi

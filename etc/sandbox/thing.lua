@@ -41,7 +41,7 @@ function Sym:ent()
 
 function Sym:inc1(x)
   self._ent= nil
-  local old = self.count[x] 
+  local old = self.counts[x] 
   local new = old and old + 1 or 1
   if new > self.most then
     self.most, self.mode = new, x end end
