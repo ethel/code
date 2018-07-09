@@ -9,17 +9,17 @@ function Thing:incs(t, f)
 end
 
 function Thing:inc(x)
-   if x==The.ignore then return x end
-   self.n = self.n + 1
-   return self:inc1(x) end
+  if x==The.ignore then return x end
+  self.n = self.n + 1
+  return self:inc1(x) end
 
 function Thing:prep(x) return x end
 
 function Thing:dec(x)
-   if x==The.ignore then return x end
-   if self.n < 3    then return x end
-   self.n = self.n - 1
-   return self:dec1(x) end
+  if x==The.ignore then return x end
+  if self.n < 3    then return x end
+  self.n = self.n - 1
+  return self:dec1(x) end
 
 function Thing:simpler(i,j) 
   local  n = self.n

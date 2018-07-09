@@ -5,6 +5,7 @@ function defaults() return {
   ninf=   -10^32,
   zip =   10^(-32),
   here=   os.getenv("Lure"),
+  data=   { best = 0.2 },
   sample= { b=200,
             most=512,
             epsilon=1.01,

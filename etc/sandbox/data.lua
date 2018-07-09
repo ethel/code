@@ -22,6 +22,11 @@ Data = Any:new{
   y  ={nums={}, syms={}, cols={},  -- all dependent columns
        less={}, more={}}}  
 
+Row = Any:new{cells, dom=0, best=false}
+
+-------------------------------------------------
+-- ## Data Methods
+--
 -- ### Data:csv(file: string)
 -- Read data in  from `file`. Return `self`.
 function Data:csv(file)
@@ -32,7 +37,6 @@ function Data:csv(file)
 -- If this is the first row, interpret `row` as the column headers.
 -- Otherwise, read `row` as data.
 function Data:inc(row)
-  push(row, self.rows)
   if   self.header then self:data(row) 
   else self.header=row; self:head(row) end end
 
@@ -40,35 +44,61 @@ function Data:inc(row)
 -- Add `row` to `self.rows`. Increment the header statistics
 -- with information from `row`'s values.
 function Data:data(row) 
-   push(row,self.rows, row)
+   push( Row:new{cells=row}, self.rows )
    for _,thing in pairs(self.all.cols) do
      thing:inc( row[thing.pos ] ) end end
 
--- ### Data:header(row: list)
+-- ### Data:head(row: list)
 -- Build the data headers.
-function Data:head(row)
-  local less=  function (i) push(i, self.y.less); i.w= -1 end
-  local more=  function (i) push(i, self.y.more) end
-  local klass= function (i) self.klass = i end
-  local all = {{"%$",Num, "x","nums"      },
+function Data:head(columns)
+  local less= function (i) push(i, self.y.less); i.w= -1 end
+  local more= function (i) push(i, self.y.more) end
+  local klass=function (i) self.klass = i end
+  local all = {{".", Sym, "x","syms"      }, -- default
+	       {"%$",Num, "x","nums"      },
                {"<" ,Num, "y","nums", less},
                {">" ,Num, "y","nums", more},
-               {"!" ,Sym, "y","syms", klass},
-	       {".", Sym, "x","syms"       }} -- default
-  for pos,txt in pairs(row) do  -- for all headers
-    for _,t in pairs(all)  do   --    for all header types
-      local pattern, what, xy, ako, also = unpack( t )
-      if string.find(txt, pattern) then -- if this type is me..
-        thing = what:new{pos=pos,txt=txt}
-        self:head1(thing, ako, xy)
-        if also then also(thing) end end end end end
+               {"!" ,Sym, "y","syms", klass}}
+  local function which(txt,t)
+    for _,u in pairs(all) do   --    for all header types
+      if string.find(txt, u[1]) then t=u end end
+    return t end
 
-function Data:head1(thing, kind, xy) 
-  push(thing, self.all.cols)
-  push(thing, self.all[kind])
-  push(thing, self[xy].cols)
-  push(thing, self[xy][kind]) end 
+  for pos,txt in pairs(columns) do 
+    local _,what,xy,ako,also = unpack( which(txt,all[1]) )
+    local it = what:new{pos=pos,txt=txt}
+    if also then also(it) end 
+    push(it, self.all[ako]); push(it, self[xy].cols)
+    push(it, self.all.cols); push(it, self[xy][ako]) 
+  end end
 
+-------------------------------------------------
+-- ## Row Methods
+--
+function Data:dominate(i,j) 
+  oo(i)
+  local s1, s2, n, z = 0, 0, #self.y.nums, The.zip
+  for pos,num in pairs(self.y,nums) do
+    local a = i.cells[ pos ]
+    local b = j.cells[ pos ]
+    print(a,b,num)
+    oo(num)
+    a       = (a - num.lo) / (num.hi - num.lo + z)
+    b       = (b - num.lo) / (num.hi - num.lo + z)
+    s1      = s1 - 10^(num.w * (a - b) / n)
+    s2      = s2 - 10^(num.w * (b - a) / n) end
+  return s1 / n < s2 / n end
+
+function Data:dominates()
+  for _,r1 in pairs(self.rows) do
+    for _,r2 in pairs(self.rows) do
+      if self:dominate(r1, r2) then
+	r1.dom = r1.dom + 1 end end end 
+  table.sort(self.rows, 
+             function (x,y) return x.dom > y.dom end)
+  for i=1,#rows*The.data.best do
+    self.rows[i].best = true end end
+	   
 -------------------------------------------------
 -- ## Test Stuff
 function autoOkay()      dataOkay("auto") end
@@ -76,10 +106,7 @@ function auto10KOkay()   dataOkay("auto10K") end
 function auto1000KOkay() dataOkay("auto1000K") end
 function weatherOkay()   
   local d = dataOkay("weather") 
-  oo(d.all.cols)
-  print(d.all.syms[1]:ent())
   assert( close( d.all.syms[1]:ent(),  1.58, 1) ) 
-  print(d.all.syms[2]:ent())
   assert( close( d.all.syms[2]:ent(),  0.98, 1) )  
   assert( close( d.all.syms[3]:ent(),  0.94, 1) )  
   assert( close( d.all.nums[1].mu,    73.57, 1) )
@@ -89,7 +116,15 @@ function dataOkay(f)
   roguesOkay()
   return Data:new():csv("../../data/".. f .. ".csv") end
 
+function domOkay()
+  local d = dataOkay("auto")
+  local n = #d.rows
+  d:dominates() 
+  hi = #d.rows
+  for i=1,10     do print(i, join(d.rows[i].cells)) end
+  for i=hi-10,hi do print(i, join(d.rows[i].cells)) end
+end
 -------------------------------------------------
 -- ## Main Stuff
 
-main{data=weatherOkay}
+main{data=domOkay}

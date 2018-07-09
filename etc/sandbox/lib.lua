@@ -48,14 +48,17 @@ function ordered(t)
 local function member(x,t)
   for _,y in pairs(t) do
     if x== y then return true end end
-  return false
-end
+  return false end
 
 -- ### push(x, t:table): x
 -- Pushes `x` to the end of table `t`. Returns `x`.  
 function push(x,t) 
-  t[ #t+1 ] = x; return x 
-end
+  t[ #t+1 ] = x; return x end
+
+-- ### join(t:table [,sep:string]): string
+-- Converts a table to a string.
+function join(t, sep)
+  return table.concat(t, sep or ", ") end
 
 -------------------------------------------------------------
 -- ## Environment Stuff
@@ -126,7 +129,7 @@ function oo(data)
   local function go(x,       str,sep)  
     if type(x) ~= "table" then return tostring(x) end
     if seen[x]            then return "..." end
-    seen[x] = true
+    --seen[x] = true
     for k,v in ordered(x) do
       str = str .. sep .. k .. ": " .. go(v, "{","")
       sep = ", " end 
